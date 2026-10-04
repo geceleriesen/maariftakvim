@@ -1,7 +1,7 @@
 package com.geceleriesen.maariftakvim.ui.widget
 
 import android.content.Context
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,9 +46,9 @@ class MaarifWidget : GlanceAppWidget() {
 
 @Composable
 fun MaarifWidgetContent(today: CalendarDay, soke: CityData, ankara: CityData) {
-    val paperColor = ColorProvider(Color.parseColor("#F5F0E1"))
-    val textColorPrimary = ColorProvider(Color.parseColor("#1A1A1A"))
-    val textColorSecondary = ColorProvider(Color.parseColor("#4A4A4A"))
+    val paperColor = ColorProvider(Color(0xFFF5F0E1))
+    val textColorPrimary = ColorProvider(Color(0xFF1A1A1A))
+    val textColorSecondary = ColorProvider(Color(0xFF4A4A4A))
 
     Column(
         modifier = GlanceModifier

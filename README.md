@@ -1,4 +1,4 @@
-﻿# 📅 Büyük Saatli Maarif Takvimi (Android Widget & Application)
+# 📅 Büyük Saatli Maarif Takvimi (Android Widget & Application)
 
 Nostaljik Büyük Saatli Maarif Takvimi estetiğini modern Android teknolojileriyle (Jetpack Glance, Kotlin, WorkManager) birleştiren açık kaynaklı bir Android widget ve kilit ekranı uygulaması.
 
