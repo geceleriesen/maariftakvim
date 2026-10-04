@@ -1,6 +1,8 @@
 package com.geceleriesen.maariftakvim.ui.widget
 
 import android.content.Context
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -31,14 +33,19 @@ import com.geceleriesen.maariftakvim.network.WeatherPrayerService
 class MaarifWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val today = CalendarRepository(context).getDay()
+        val dir = context.filesDir
 
         // Sehirler Adim 4'te kullanicidan/GPS'ten gelecek
-        val sokeData = WeatherPrayerService.fetchCityData("Söke", 37.75, 27.40)
-        val ankaraData = WeatherPrayerService.fetchCityData("Ankara", 39.93, 32.85)
+        val (soke, ankara) = coroutineScope {
+            val a = async { WeatherPrayerService.fetchCityData(dir, "Söke", 37.75, 27.40) }
+            val b = async { WeatherPrayerService.fetchCityData(dir, "Ankara", 39.93, 32.85) }
+            Pair(a.await(), b.await())
+        }
+
+        val today = CalendarRepository(context).getDay().copy(dayLengthInfo = soke.dayLengthInfo)
 
         provideContent {
-            MaarifWidgetContent(today = today, soke = sokeData, ankara = ankaraData)
+            MaarifWidgetContent(today = today, soke = soke, ankara = ankara)
         }
     }
 }
