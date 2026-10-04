@@ -23,21 +23,29 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import com.geceleriesen.maariftakvim.data.CalendarDay
 import com.geceleriesen.maariftakvim.data.CalendarRepository
+import com.geceleriesen.maariftakvim.network.CityData
+import com.geceleriesen.maariftakvim.network.WeatherPrayerService
 
 class MaarifWidget : GlanceAppWidget() {
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repo = CalendarRepository(context)
         val today = repo.getTodayData()
 
+        // Söke ve Ankara için canlı hava durumu verisi çekiliyor
+        val sokeData = WeatherPrayerService.fetchCityData("Söke", 37.75, 27.40)
+        val ankaraData = WeatherPrayerService.fetchCityData("Ankara", 39.93, 32.85)
+
         provideContent {
-            MaarifWidgetContent(today = today)
+            MaarifWidgetContent(today = today, soke = sokeData, ankara = ankaraData)
         }
     }
 }
 
 @Composable
-fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
+fun MaarifWidgetContent(today: CalendarDay, soke: CityData, ankara: CityData) {
     val paperColor = ColorProvider(Color.parseColor("#F5F0E1"))
     val textColorPrimary = ColorProvider(Color.parseColor("#1A1A1A"))
     val textColorSecondary = ColorProvider(Color.parseColor("#4A4A4A"))
@@ -49,118 +57,86 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Üst Bilgi Satırı
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(horizontalAlignment = Alignment.Start) {
-                Text(
-                    text = today.hijriDate,
-                    style = TextStyle(color = textColorSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                )
-            }
+            Text(text = today.hijriDate, style = TextStyle(color = textColorSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold))
             Spacer(modifier = GlanceModifier.defaultWeight())
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = today.dayLengtheningInfo,
-                    style = TextStyle(color = textColorSecondary, fontSize = 9.sp)
-                )
-            }
+            Text(text = today.dayLengtheningInfo, style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
             Spacer(modifier = GlanceModifier.defaultWeight())
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = today.rumiDate,
-                    style = TextStyle(color = textColorSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                )
-            }
+            Text(text = today.rumiDate, style = TextStyle(color = textColorSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold))
         }
 
-        Spacer(modifier = GlanceModifier.height(6.dp))
+        Spacer(modifier = GlanceModifier.height(4.dp))
 
-        Text(
-            text = today.gregorianDate,
-            style = TextStyle(color = textColorPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        )
+        // Miladi Tarih
+        Text(text = today.gregorianDate, style = TextStyle(color = textColorPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold))
 
-        Spacer(modifier = GlanceModifier.height(10.dp))
+        Spacer(modifier = GlanceModifier.height(8.dp))
 
+        // Çift Sütun Vakitler & Hava Durumu + Büyük Gün Numarası
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Sol Sütun: Söke
             Column(
                 modifier = GlanceModifier.defaultWeight(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "SÖKE 20°C", style = TextStyle(color = textColorPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold))
-                Spacer(modifier = GlanceModifier.height(4.dp))
-                Text(text = "Güneş: 07:03", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "Öğle: 12:55", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "İkindi: 16:09", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "Akşam: 18:37", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "Yatsı: 19:53", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "İmsak: 05:35", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "${soke.cityName} ${soke.temp}", style = TextStyle(color = textColorPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                Spacer(modifier = GlanceModifier.height(2.dp))
+                Text(text = "Güneş: ${soke.gunes}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "Öğle: ${soke.ogle}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "İkindi: ${soke.ikindi}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "Akşam: ${soke.aksam}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "Yatsı: ${soke.yatsı}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
             }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = today.dayNumber,
-                    style = TextStyle(color = textColorPrimary, fontSize = 64.sp, fontWeight = FontWeight.Bold)
-                )
-            }
+            // Orta: Dev Gün Numarası
+            Text(
+                text = today.dayNumber,
+                style = TextStyle(color = textColorPrimary, fontSize = 60.sp, fontWeight = FontWeight.Bold)
+            )
 
+            // Sağ Sütun: Ankara
             Column(
                 modifier = GlanceModifier.defaultWeight(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "ANKARA 18°C", style = TextStyle(color = textColorPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold))
-                Spacer(modifier = GlanceModifier.height(4.dp))
-                Text(text = "Güneş: 06:48", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "Öğle: 12:40", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "İkindi: 15:54", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "Akşam: 18:22", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "Yatsı: 19:38", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
-                Text(text = "İmsak: 05:19", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "${ankara.cityName} ${ankara.temp}", style = TextStyle(color = textColorPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                Spacer(modifier = GlanceModifier.height(2.dp))
+                Text(text = "Güneş: ${ankara.gunes}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "Öğle: ${ankara.ogle}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "İkindi: ${ankara.ikindi}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "Akşam: ${ankara.aksam}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
+                Text(text = "Yatsı: ${ankara.yatsı}", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
             }
         }
 
-        Spacer(modifier = GlanceModifier.height(8.dp))
-
-        Text(
-            text = today.dayName,
-            style = TextStyle(color = textColorPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        )
-
         Spacer(modifier = GlanceModifier.height(6.dp))
 
+        // Gün İsmi
+        Text(text = today.dayName, style = TextStyle(color = textColorPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold))
+
+        Spacer(modifier = GlanceModifier.height(4.dp))
+
+        // Halk Takvimi ve Olaylar
         if (today.folkCalendar.isNotEmpty()) {
-            Text(
-                text = "(${today.folkCalendar})",
-                style = TextStyle(color = textColorSecondary, fontSize = 11.sp)
-            )
+            Text(text = "(${today.folkCalendar})", style = TextStyle(color = textColorSecondary, fontSize = 10.sp))
         }
-
         if (today.historyEvent.isNotEmpty()) {
-            Text(
-                text = "(${today.historyEvent})",
-                style = TextStyle(color = textColorSecondary, fontSize = 10.sp)
-            )
+            Text(text = today.historyEvent, style = TextStyle(color = textColorSecondary, fontSize = 10.sp))
         }
 
         Spacer(modifier = GlanceModifier.height(6.dp))
 
-        Text(
-            text = "[AJANDA]: 17:30 - Haftalık Proje İncelemesi",
-            style = TextStyle(color = textColorPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-        )
-
-        Spacer(modifier = GlanceModifier.height(6.dp))
-
+        // Günün Sözü
         Text(
             text = "\"${today.quote}\" — ${today.quoteAuthor}",
-            style = TextStyle(color = textColorSecondary, fontSize = 10.sp)
+            style = TextStyle(color = textColorSecondary, fontSize = 9.sp)
         )
     }
 }

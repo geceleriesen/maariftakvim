@@ -1,59 +1,60 @@
-﻿package com.geceleriesen.maariftakvim.data
+package com.geceleriesen.maariftakvim.data
 
 import android.content.Context
 import org.json.JSONArray
-import java.util.Calendar
+
+data class CalendarDay(
+    val id: Int,
+    val gregorianDate: String,
+    val hijriDate: String,
+    val rumiDate: String,
+    val dayNumber: String,
+    val dayName: String,
+    val dayLengtheningInfo: String,
+    val quote: String,
+    val quoteAuthor: String,
+    val folkCalendar: String,
+    val historyEvent: String,
+    val recipe: String
+)
 
 class CalendarRepository(private val context: Context) {
 
     fun getTodayData(): CalendarDay {
-        val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
-        val jsonString = context.assets.open("data.json").bufferedReader().use { it.readText() }
-        val jsonArray = JSONArray(jsonString)
+        return try {
+            val jsonString = context.assets.open("data.json").bufferedReader().use { it.readText() }
+            val jsonArray = JSONArray(jsonString)
+            val obj = jsonArray.getJSONObject(0)
 
-        for (i in 0 until jsonArray.length()) {
-            val obj = jsonArray.getJSONObject(i)
-            if (obj.optInt("day_of_year") == dayOfYear) {
-                val backObj = obj.getJSONObject("back_side")
-                val namesObj = backObj.getJSONObject("names")
-                
-                return CalendarDay(
-                    dayOfYear = obj.getInt("day_of_year"),
-                    gregorianDate = obj.optString("gregorian_date", "4 EKİM 2026 MİLADİ"),
-                    hijriDate = obj.optString("hijri_date", "1448 HİCRİ REBİÜLEVVEL 22"),
-                    rumiDate = obj.optString("rumi_date", "1442 RUMİ EYLÜL 21"),
-                    dayNumber = obj.optString("day_number", "22"),
-                    dayName = obj.optString("day_name", "PAZAR"),
-                    dayLengtheningInfo = obj.optString("day_lengthening", "Günün uzaması 3 dk"),
-                    folkCalendar = obj.optString("folk_calendar", ""),
-                    historyEvent = obj.optString("history_event", ""),
-                    quote = obj.getString("quote"),
-                    quoteAuthor = obj.getString("quote_author"),
-                    backSide = BackSideContent(
-                        girlName = namesObj.optString("girl", "-"),
-                        boyName = namesObj.optString("boy", "-"),
-                        recipe = backObj.optString("recipe", "-"),
-                        riddle = backObj.optString("riddle", "-"),
-                        riddleAnswer = backObj.optString("riddle_answer", "-"),
-                        joke = backObj.optString("joke", "-")
-                    )
-                )
-            }
+            CalendarDay(
+                id = obj.optInt("id", 1),
+                gregorianDate = obj.optString("gregorianDate", "22 HAZİRAN"),
+                hijriDate = obj.optString("hijriDate", "16 ZİLHİCCE 1447"),
+                rumiDate = obj.optString("rumiDate", "9 HAZİRAN 1442"),
+                dayNumber = obj.optString("dayNumber", "22"),
+                dayName = obj.optString("dayName", "PAZAR"),
+                dayLengtheningInfo = obj.optString("dayLengtheningInfo", "GÜN: 15 Sa. 12 Dk."),
+                quote = obj.optString("quote", "Bilmeyen ve bilmediğini bilen çocuktur, ona öğretin."),
+                quoteAuthor = obj.optString("quoteAuthor", "Koyunbaba"),
+                folkCalendar = obj.optString("folkCalendar", "Yaz Başlangıcı"),
+                historyEvent = obj.optString("historyEvent", "1919: Amasya Genelgesi yayımlandı."),
+                recipe = obj.optString("recipe", "Taze Fasulye")
+            )
+        } catch (e: Exception) {
+            CalendarDay(
+                id = 1,
+                gregorianDate = "22 HAZİRAN",
+                hijriDate = "16 ZİLHİCCE 1447",
+                rumiDate = "9 HAZİRAN 1442",
+                dayNumber = "22",
+                dayName = "PAZAR",
+                dayLengtheningInfo = "GÜN: 15 Sa. 12 Dk.",
+                quote = "Bilmeyen ve bilmediğini bilen çocuktur, ona öğretin.",
+                quoteAuthor = "Koyunbaba",
+                folkCalendar = "Yaz Başlangıcı",
+                historyEvent = "1919: Amasya Genelgesi yayımlandı.",
+                recipe = "Taze Fasulye"
+            )
         }
-        
-        return CalendarDay(
-            dayOfYear = dayOfYear,
-            gregorianDate = "4 EKİM 2026 MİLADİ",
-            hijriDate = "1448 HİCRİ 22",
-            rumiDate = "1442 RUMİ 21",
-            dayNumber = "22",
-            dayName = "PAZAR",
-            dayLengtheningInfo = "",
-            folkCalendar = "Fırtına",
-            historyEvent = "",
-            quote = "Kişinin aklı, sorduğu sorulardan anlaşılır.",
-            quoteAuthor = "Hz. Ömer (r.a.)",
-            backSide = BackSideContent("Defne", "Rüzgar", "Karnıyarık", "Çarşıdan aldım bir tane...", "Nar", "Fıkra")
-        )
     }
 }
