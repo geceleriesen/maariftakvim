@@ -1,16 +1,13 @@
-[
-  {
-    "id": 1,
-    "gregorianDate": "22 HAZİRAN",
-    "hijriDate": "16 ZİLHİCCE 1447",
-    "rumiDate": "9 HAZİRAN 1442",
-    "dayNumber": "22",
-    "dayName": "PAZAR",
-    "dayLengtheningInfo": "GÜN: 15 Sa. 12 Dk. (En Uzun Günler)",
+{
+  "06-22": {
     "quote": "Bilmeyen ve bilmediğini bilen çocuktur, ona öğretin. Bilen ve bildiğini bilmeyen uykudadır, onu uyandırın.",
     "quoteAuthor": "Koyunbaba",
     "folkCalendar": "Gündönümü Fırtınası - Yaz Başlangıcı",
     "historyEvent": "1919: Amasya Genelgesi yayımlandı.",
     "recipe": "Günün Yemeği: Taze Fasulye, Pirinç Pilavı, Cacık."
+  },
+  "10-04": {
+    "folkCalendar": "Yaprak Dökümü",
+    "historyEvent": "Dünya Hayvanları Koruma Günü (1931'den beri)."
   }
-]
+}

@@ -1,37 +1,40 @@
 package com.geceleriesen.maariftakvim.data
 
 import android.content.Context
-import org.json.JSONArray
+import com.geceleriesen.maariftakvim.domain.TurkishCalendar
+import java.time.LocalDate
+import java.util.Locale
+import org.json.JSONObject
 
 class CalendarRepository(private val context: Context) {
 
-    fun getTodayData(): CalendarDay {
-        return try {
-            val jsonString = context.assets.open("data.json").bufferedReader().use { it.readText() }
-            val jsonArray = JSONArray(jsonString)
-            val obj = jsonArray.getJSONObject(0)
+    fun getDay(date: LocalDate = LocalDate.now()): CalendarDay {
+        val info = TurkishCalendar.info(date)
+        val extras = loadExtras(date)
 
-            CalendarDay(
-                id = obj.optInt("id", 1),
-                gregorianDate = obj.optString("gregorianDate", "22 HAZİRAN"),
-                hijriDate = obj.optString("hijriDate", "16 ZİLHİCCE 1447"),
-                rumiDate = obj.optString("rumiDate", "9 HAZİRAN 1442"),
-                dayNumber = obj.optString("dayNumber", "22"),
-                dayName = obj.optString("dayName", "PAZAR"),
-                dayLengtheningInfo = obj.optString("dayLengtheningInfo", "GÜN: 15 Sa. 12 Dk."),
-                quote = obj.optString("quote", "Bilmeyen ve bilmediğini bilen çocuktur, ona öğretin."),
-                quoteAuthor = obj.optString("quoteAuthor", "Koyunbaba"),
-                folkCalendar = obj.optString("folkCalendar", "Yaz Başlangıcı"),
-                historyEvent = obj.optString("historyEvent", "1919: Amasya Genelgesi yayımlandı."),
-                recipe = obj.optString("recipe", "Taze Fasulye"),
-                dayOfYear = obj.optString("dayOfYear", "173. Gün"),
-                backSide = BackSideContent(
-                    title = "Günün Yemek Tarifi",
-                    text = obj.optString("recipe", "Taze Fasulye")
-                )
-            )
+        return CalendarDay(
+            gregorianText = info.gregorianText,
+            dayNumber = info.gregorianDay.toString(),
+            dayName = info.dayName,
+            hijriDate = info.hijriText,
+            rumiDate = info.rumiText,
+            dayOfYear = info.dayOfYear,
+            daysLeftInYear = info.daysLeftInYear,
+            quote = extras?.optString("quote", "").orEmpty(),
+            quoteAuthor = extras?.optString("quoteAuthor", "").orEmpty(),
+            folkCalendar = extras?.optString("folkCalendar", "").orEmpty(),
+            historyEvent = extras?.optString("historyEvent", "").orEmpty(),
+            recipe = extras?.optString("recipe", "").orEmpty()
+        )
+    }
+
+    private fun loadExtras(date: LocalDate): JSONObject? {
+        return try {
+            val text = context.assets.open("data.json").bufferedReader().use { it.readText() }
+            val key = String.format(Locale.ROOT, "%02d-%02d", date.monthValue, date.dayOfMonth)
+            JSONObject(text).optJSONObject(key)
         } catch (e: Exception) {
-            CalendarDay()
+            null
         }
     }
 }

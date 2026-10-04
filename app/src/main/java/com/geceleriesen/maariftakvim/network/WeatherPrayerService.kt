@@ -1,12 +1,11 @@
 package com.geceleriesen.maariftakvim.network
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
-import org.json.JSONObject
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 data class CityData(
     val cityName: String,
@@ -16,51 +15,46 @@ data class CityData(
     val ogle: String,
     val ikindi: String,
     val aksam: String,
-    val yatsı: String
+    val yatsi: String
 )
 
 object WeatherPrayerService {
 
-    suspend fun fetchCityData(cityName: String, lat: Double, lon: Double): CityData = withContext(Dispatchers.IO) {
+    private val TR: Locale = Locale.forLanguageTag("tr-TR")
+    private const val NO_TIME = "--:--"
+
+    // Namaz vakitleri Adim 3'te gercek kaynaktan gelecek; o zamana kadar bos gosterilir.
+    suspend fun fetchCityData(cityName: String, lat: Double, lon: Double): CityData =
+        withContext(Dispatchers.IO) {
+            val temp = try {
+                fetchTemperature(lat, lon)
+            } catch (e: Exception) {
+                "--"
+            }
+            CityData(
+                cityName = cityName.uppercase(TR),
+                temp = temp,
+                imsak = NO_TIME,
+                gunes = NO_TIME,
+                ogle = NO_TIME,
+                ikindi = NO_TIME,
+                aksam = NO_TIME,
+                yatsi = NO_TIME
+            )
+        }
+
+    private fun fetchTemperature(lat: Double, lon: Double): String {
+        val url = URL("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current_weather=true")
+        val conn = url.openConnection() as HttpURLConnection
         try {
-            // Open-Meteo Ücretsiz Hava Durumu API
-            val weatherUrl = URL("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current_weather=true")
-            val conn = weatherUrl.openConnection() as HttpURLConnection
             conn.requestMethod = "GET"
             conn.connectTimeout = 5000
             conn.readTimeout = 5000
-
-            val reader = BufferedReader(InputStreamReader(conn.inputStream))
-            val response = reader.readText()
-            reader.close()
-
-            val jsonObj = JSONObject(response)
-            val currentWeather = jsonObj.getJSONObject("current_weather")
-            val temp = "${currentWeather.getDouble("temperature").toInt()}°C"
-
-            // Varsayılan/Örnek Vakitler (Arayüz Uyumu İçin)
-            return@withContext CityData(
-                cityName = cityName.uppercase(),
-                temp = temp,
-                imsak = "04:12",
-                gunes = "05:48",
-                ogle = "13:05",
-                ikindi = "16:52",
-                aksam = "20:21",
-                yatsı = "21:50"
-            )
-        } catch (e: Exception) {
-            // İnternet olmaması durumunda fallback veriler
-            return@withContext CityData(
-                cityName = cityName.uppercase(),
-                temp = "22°C",
-                imsak = "04:12",
-                gunes = "05:48",
-                ogle = "13:05",
-                ikindi = "16:52",
-                aksam = "20:21",
-                yatsı = "21:50"
-            )
+            val response = conn.inputStream.bufferedReader().use { it.readText() }
+            val t = JSONObject(response).getJSONObject("current_weather").getDouble("temperature")
+            return "${Math.round(t)}°C"
+        } finally {
+            conn.disconnect()
         }
     }
 }
