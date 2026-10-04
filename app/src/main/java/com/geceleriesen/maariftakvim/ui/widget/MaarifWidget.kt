@@ -1,6 +1,10 @@
 package com.geceleriesen.maariftakvim.ui.widget
 
 import android.content.Context
+import androidx.glance.action.clickable
+import androidx.glance.appwidget.action.actionStartActivity
+import com.geceleriesen.maariftakvim.data.Settings
+import com.geceleriesen.maariftakvim.ui.MainActivity
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import androidx.compose.runtime.Composable
@@ -34,18 +38,20 @@ class MaarifWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val dir = context.filesDir
+        val settings = Settings(context)
+        val c1 = settings.city1
+        val c2 = settings.city2
 
-        // Sehirler Adim 4'te kullanicidan/GPS'ten gelecek
-        val (soke, ankara) = coroutineScope {
-            val a = async { WeatherPrayerService.fetchCityData(dir, "Söke", 37.75, 27.40) }
-            val b = async { WeatherPrayerService.fetchCityData(dir, "Ankara", 39.93, 32.85) }
+        val (first, second) = coroutineScope {
+            val a = async { WeatherPrayerService.fetchCityData(dir, c1.name, c1.lat, c1.lon) }
+            val b = async { WeatherPrayerService.fetchCityData(dir, c2.name, c2.lat, c2.lon) }
             Pair(a.await(), b.await())
         }
 
-        val today = CalendarRepository(context).getDay().copy(dayLengthInfo = soke.dayLengthInfo)
+        val today = CalendarRepository(context).getDay().copy(dayLengthInfo = first.dayLengthInfo)
 
         provideContent {
-            MaarifWidgetContent(today = today, soke = soke, ankara = ankara)
+            MaarifWidgetContent(today = today, soke = first, ankara = second)
         }
     }
 }
@@ -66,6 +72,7 @@ fun MaarifWidgetContent(today: CalendarDay, soke: CityData, ankara: CityData) {
         modifier = GlanceModifier
             .fillMaxSize()
             .background(paperColor)
+            .clickable(actionStartActivity<MainActivity>())
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

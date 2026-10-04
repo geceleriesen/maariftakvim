@@ -13,6 +13,7 @@ import com.geceleriesen.maariftakvim.data.CalendarDay
 import com.geceleriesen.maariftakvim.network.CityData
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.util.Random
 import kotlin.math.cos
 import kotlin.math.max
@@ -22,7 +23,9 @@ data class PageData(
     val day: CalendarDay,
     val date: LocalDate,
     val left: CityData,
-    val right: CityData
+    val right: CityData,
+    val leftZone: ZoneId = ZoneId.systemDefault(),
+    val rightZone: ZoneId = ZoneId.systemDefault()
 )
 
 /**
@@ -68,8 +71,8 @@ class CalendarPageRenderer {
 
         val clockY = 480f * k
         val boxTop = 640f * k
-        drawClock(canvas, 167f, clockY, 78f, now)
-        drawClock(canvas, 833f, clockY, 78f, now)
+        drawClock(canvas, 167f, clockY, 78f, LocalTime.now(data.leftZone))
+        drawClock(canvas, 833f, clockY, 78f, LocalTime.now(data.rightZone))
         txt(canvas, data.left.temp, 167f, clockY + 78f + 52f, 38f, ink, serifBold, 200f)
         txt(canvas, data.right.temp, 833f, clockY + 78f + 52f, 38f, ink, serifBold, 200f)
 
