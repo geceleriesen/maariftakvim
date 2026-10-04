@@ -1,4 +1,4 @@
-﻿package com.geceleriesen.maariftakvim.ui.widget
+package com.geceleriesen.maariftakvim.ui.widget
 
 import android.content.Context
 import android.graphics.Color
@@ -12,7 +12,6 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
-import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -20,7 +19,6 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -28,7 +26,7 @@ import androidx.glance.unit.ColorProvider
 import com.geceleriesen.maariftakvim.data.CalendarRepository
 
 class MaarifWidget : GlanceAppWidget() {
-    override async fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repo = CalendarRepository(context)
         val today = repo.getTodayData()
 
@@ -40,7 +38,6 @@ class MaarifWidget : GlanceAppWidget() {
 
 @Composable
 fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
-    // Nostaljik Krem / Sarımtırak Kağıt Doku Arka Planı
     val paperColor = ColorProvider(Color.parseColor("#F5F0E1"))
     val textColorPrimary = ColorProvider(Color.parseColor("#1A1A1A"))
     val textColorSecondary = ColorProvider(Color.parseColor("#4A4A4A"))
@@ -52,7 +49,6 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- ÜST BÖLÜM: 3 FARKLI TAKVİM VE GÜNÜN UZAMASI ---
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -81,7 +77,6 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
 
         Spacer(modifier = GlanceModifier.height(6.dp))
 
-        // --- MİLADİ TARİH BAŞLIĞI ---
         Text(
             text = today.gregorianDate,
             style = TextStyle(color = textColorPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -89,12 +84,10 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
 
         Spacer(modifier = GlanceModifier.height(10.dp))
 
-        // --- ORTA BÖLÜM: ÇİFT ŞEHİRLİ SÜTUNLAR VE DEV GÜN NUMARASI ---
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // SOL SÜTUN (Söke / GPS Otomatik Konum)
             Column(
                 modifier = GlanceModifier.defaultWeight(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -109,7 +102,6 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
                 Text(text = "İmsak: 05:35", style = TextStyle(color = textColorSecondary, fontSize = 9.sp))
             }
 
-            // MERKEZ (Dev Gün Numarası)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -119,7 +111,6 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
                 )
             }
 
-            // SAĞ SÜTUN (Ankara / Seçili 2. Şehir)
             Column(
                 modifier = GlanceModifier.defaultWeight(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -137,7 +128,6 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
 
         Spacer(modifier = GlanceModifier.height(8.dp))
 
-        // --- BÜYÜK GÜN İSMİ ---
         Text(
             text = today.dayName,
             style = TextStyle(color = textColorPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
@@ -145,7 +135,6 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
 
         Spacer(modifier = GlanceModifier.height(6.dp))
 
-        // --- ALT BÖLÜM: HALK TAKVİMİ & TARİHTE BUGÜN ---
         if (today.folkCalendar.isNotEmpty()) {
             Text(
                 text = "(${today.folkCalendar})",
@@ -162,7 +151,6 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
 
         Spacer(modifier = GlanceModifier.height(6.dp))
 
-        // --- AJANDA SATIRI ---
         Text(
             text = "[AJANDA]: 17:30 - Haftalık Proje İncelemesi",
             style = TextStyle(color = textColorPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -170,7 +158,6 @@ fun MaarifWidgetContent(today: com.geceleriesen.maariftakvim.data.CalendarDay) {
 
         Spacer(modifier = GlanceModifier.height(6.dp))
 
-        // --- GÜNÜN SÖZÜ / VECİZE ---
         Text(
             text = "\"${today.quote}\" — ${today.quoteAuthor}",
             style = TextStyle(color = textColorSecondary, fontSize = 10.sp)
