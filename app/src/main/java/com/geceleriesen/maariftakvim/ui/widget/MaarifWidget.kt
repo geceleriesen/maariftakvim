@@ -1,6 +1,7 @@
 package com.geceleriesen.maariftakvim.ui.widget
 
 import android.content.Context
+import android.content.Intent
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionStartActivity
 import com.geceleriesen.maariftakvim.data.Settings
@@ -49,15 +50,16 @@ class MaarifWidget : GlanceAppWidget() {
         }
 
         val today = CalendarRepository(context).getDay().copy(dayLengthInfo = first.dayLengthInfo)
+        val openApp = Intent(context, MainActivity::class.java)
 
         provideContent {
-            MaarifWidgetContent(today = today, soke = first, ankara = second)
+            MaarifWidgetContent(today = today, soke = first, ankara = second, openApp = openApp)
         }
     }
 }
 
 @Composable
-fun MaarifWidgetContent(today: CalendarDay, soke: CityData, ankara: CityData) {
+fun MaarifWidgetContent(today: CalendarDay, soke: CityData, ankara: CityData, openApp: Intent) {
     val paperColor = ColorProvider(Color(0xFFF5F0E1))
     val textColorPrimary = ColorProvider(Color(0xFF1A1A1A))
     val textColorSecondary = ColorProvider(Color(0xFF4A4A4A))
@@ -72,7 +74,7 @@ fun MaarifWidgetContent(today: CalendarDay, soke: CityData, ankara: CityData) {
         modifier = GlanceModifier
             .fillMaxSize()
             .background(paperColor)
-            .clickable(actionStartActivity<MainActivity>())
+            .clickable(actionStartActivity(openApp))
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
