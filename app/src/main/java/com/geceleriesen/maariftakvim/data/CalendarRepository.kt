@@ -15,7 +15,9 @@ data class CalendarDay(
     val quoteAuthor: String,
     val folkCalendar: String,
     val historyEvent: String,
-    val recipe: String
+    val recipe: String = "",
+    val dayOfYear: String = "",
+    val backSide: String = ""
 )
 
 class CalendarRepository(private val context: Context) {
@@ -38,7 +40,9 @@ class CalendarRepository(private val context: Context) {
                 quoteAuthor = obj.optString("quoteAuthor", "Koyunbaba"),
                 folkCalendar = obj.optString("folkCalendar", "Yaz Başlangıcı"),
                 historyEvent = obj.optString("historyEvent", "1919: Amasya Genelgesi yayımlandı."),
-                recipe = obj.optString("recipe", "Taze Fasulye")
+                recipe = obj.optString("recipe", "Taze Fasulye"),
+                dayOfYear = obj.optString("dayOfYear", "173. Gün"),
+                backSide = obj.optString("backSide", "Faydalı Bilgiler")
             )
         } catch (e: Exception) {
             CalendarDay(
@@ -53,7 +57,9 @@ class CalendarRepository(private val context: Context) {
                 quoteAuthor = "Koyunbaba",
                 folkCalendar = "Yaz Başlangıcı",
                 historyEvent = "1919: Amasya Genelgesi yayımlandı.",
-                recipe = "Taze Fasulye"
+                recipe = "Taze Fasulye",
+                dayOfYear = "173. Gün",
+                backSide = "Faydalı Bilgiler"
             )
         }
     }
