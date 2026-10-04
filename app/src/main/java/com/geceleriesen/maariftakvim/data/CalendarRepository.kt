@@ -3,23 +3,6 @@ package com.geceleriesen.maariftakvim.data
 import android.content.Context
 import org.json.JSONArray
 
-data class CalendarDay(
-    val id: Int,
-    val gregorianDate: String,
-    val hijriDate: String,
-    val rumiDate: String,
-    val dayNumber: String,
-    val dayName: String,
-    val dayLengtheningInfo: String,
-    val quote: String,
-    val quoteAuthor: String,
-    val folkCalendar: String,
-    val historyEvent: String,
-    val recipe: String = "",
-    val dayOfYear: String = "",
-    val backSide: String = ""
-)
-
 class CalendarRepository(private val context: Context) {
 
     fun getTodayData(): CalendarDay {
@@ -42,25 +25,13 @@ class CalendarRepository(private val context: Context) {
                 historyEvent = obj.optString("historyEvent", "1919: Amasya Genelgesi yayımlandı."),
                 recipe = obj.optString("recipe", "Taze Fasulye"),
                 dayOfYear = obj.optString("dayOfYear", "173. Gün"),
-                backSide = obj.optString("backSide", "Faydalı Bilgiler")
+                backSide = BackSideContent(
+                    title = "Günün Yemek Tarifi",
+                    text = obj.optString("recipe", "Taze Fasulye")
+                )
             )
         } catch (e: Exception) {
-            CalendarDay(
-                id = 1,
-                gregorianDate = "22 HAZİRAN",
-                hijriDate = "16 ZİLHİCCE 1447",
-                rumiDate = "9 HAZİRAN 1442",
-                dayNumber = "22",
-                dayName = "PAZAR",
-                dayLengtheningInfo = "GÜN: 15 Sa. 12 Dk.",
-                quote = "Bilmeyen ve bilmediğini bilen çocuktur, ona öğretin.",
-                quoteAuthor = "Koyunbaba",
-                folkCalendar = "Yaz Başlangıcı",
-                historyEvent = "1919: Amasya Genelgesi yayımlandı.",
-                recipe = "Taze Fasulye",
-                dayOfYear = "173. Gün",
-                backSide = "Faydalı Bilgiler"
-            )
+            CalendarDay()
         }
     }
 }
