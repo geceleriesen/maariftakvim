@@ -1,4 +1,4 @@
-﻿[versions]
+[versions]
 agp = "8.2.2"
 kotlin = "1.9.22"
 
