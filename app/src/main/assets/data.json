@@ -1,15 +1,16 @@
-﻿[
+[
   {
-    "day_of_year": 277,
-    "quote": "Kişinin aklı, sorduğu sorulardan anlaşılır.",
-    "quote_author": "Hz. Ömer (r.a.)",
-    "folk_calendar": "Yaprak dökümü - Fırtına",
-    "history_event": "Hayvanları Koruma Gününün 95. Yıldönümü",
-    "back_side": {
-      "names": { "girl": "Defne", "boy": "Rüzgar" },
-      "recipe": "Fırında Karnıyarık & Şehriyeli Pirinç Pilavı",
-      "riddle": "Çarşıdan aldım bir tane, eve geldim bin tane?",
-      "riddle_answer": "Nar"
-    }
+    "id": 1,
+    "gregorianDate": "22 HAZİRAN",
+    "hijriDate": "16 ZİLHİCCE 1447",
+    "rumiDate": "9 HAZİRAN 1442",
+    "dayNumber": "22",
+    "dayName": "PAZAR",
+    "dayLengtheningInfo": "GÜN: 15 Sa. 12 Dk. (En Uzun Günler)",
+    "quote": "Bilmeyen ve bilmediğini bilen çocuktur, ona öğretin. Bilen ve bildiğini bilmeyen uykudadır, onu uyandırın.",
+    "quoteAuthor": "Koyunbaba",
+    "folkCalendar": "Gündönümü Fırtınası - Yaz Başlangıcı",
+    "historyEvent": "1919: Amasya Genelgesi yayımlandı.",
+    "recipe": "Günün Yemeği: Taze Fasulye, Pirinç Pilavı, Cacık."
   }
 ]
