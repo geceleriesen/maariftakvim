@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionStartActivity
+import com.geceleriesen.maariftakvim.data.CityResolver
 import com.geceleriesen.maariftakvim.data.Settings
 import com.geceleriesen.maariftakvim.ui.MainActivity
 import kotlinx.coroutines.async
@@ -40,7 +41,7 @@ class MaarifWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val dir = context.filesDir
         val settings = Settings(context)
-        val c1 = settings.city1
+        val c1 = CityResolver.city1(context)
         val c2 = settings.city2
 
         val (first, second) = coroutineScope {

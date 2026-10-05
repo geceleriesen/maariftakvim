@@ -2,6 +2,7 @@ package com.geceleriesen.maariftakvim.data
 
 import android.content.Context
 import java.time.ZoneId
+import java.util.Locale
 
 data class CityPref(val name: String, val lat: Double, val lon: Double, val zone: String) {
     fun zoneId(): ZoneId = try {
@@ -28,6 +29,44 @@ class Settings(context: Context) {
         set(value) {
             sp.edit().putBoolean("first_run_done", value).apply()
         }
+
+    /** 1. sehir yerine telefonun son bilinen konumunu kullan */
+    var autoLocation: Boolean
+        get() = sp.getBoolean("auto_location", false)
+        set(value) {
+            sp.edit().putBoolean("auto_location", value).apply()
+        }
+
+    /** Tam ekranda takvimdeki siradaki etkinligi goster */
+    var showAgenda: Boolean
+        get() = sp.getBoolean("show_agenda", false)
+        set(value) {
+            sp.edit().putBoolean("show_agenda", value).apply()
+        }
+
+    /** Takvim ekrani acikken telefonun ekrani kapanmasin */
+    var keepScreenOn: Boolean
+        get() = sp.getBoolean("keep_screen_on", true)
+        set(value) {
+            sp.edit().putBoolean("keep_screen_on", value).apply()
+        }
+
+    /** Kilit ekrani resmini her gece otomatik yenile */
+    var lockDaily: Boolean
+        get() = sp.getBoolean("lock_daily", false)
+        set(value) {
+            sp.edit().putBoolean("lock_daily", value).apply()
+        }
+
+    // Konumdan bulunan yer adlari (Geocoder her seferinde sorulmasin)
+    fun cachedPlace(lat: Double, lon: Double): String? = sp.getString(placeKey(lat, lon), null)
+
+    fun cachePlace(lat: Double, lon: Double, name: String) {
+        sp.edit().putString(placeKey(lat, lon), name).apply()
+    }
+
+    private fun placeKey(lat: Double, lon: Double): String =
+        String.format(Locale.ROOT, "place_%.2f_%.2f", lat, lon)
 
     private fun read(key: String, def: CityPref): CityPref {
         val name = sp.getString("${key}_name", null) ?: return def

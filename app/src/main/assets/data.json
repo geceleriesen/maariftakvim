@@ -1,13 +1,52 @@
 {
+  "03-03": {
+    "historyEvent": "1924: Hilafet kaldırıldı ve Tevhid-i Tedrisat Kanunu kabul edildi."
+  },
+  "03-12": {
+    "historyEvent": "1921: İstiklal Marşı TBMM'de kabul edildi."
+  },
+  "03-18": {
+    "historyEvent": "1915: Çanakkale Deniz Zaferi kazanıldı."
+  },
+  "04-23": {
+    "historyEvent": "1920: TBMM Ankara'da açıldı."
+  },
+  "05-19": {
+    "historyEvent": "1919: Mustafa Kemal Samsun'a çıktı."
+  },
+  "05-29": {
+    "historyEvent": "1453: İstanbul fethedildi."
+  },
   "06-22": {
     "quote": "Bilmeyen ve bilmediğini bilen çocuktur, ona öğretin. Bilen ve bildiğini bilmeyen uykudadır, onu uyandırın.",
     "quoteAuthor": "Koyunbaba",
     "folkCalendar": "Gündönümü Fırtınası - Yaz Başlangıcı",
     "historyEvent": "1919: Amasya Genelgesi yayımlandı.",
-    "recipe": "Günün Yemeği: Taze Fasulye, Pirinç Pilavı, Cacık."
+    "menu": "Taze fasulye, pirinç pilavı, cacık"
+  },
+  "07-24": {
+    "historyEvent": "1923: Lozan Antlaşması imzalandı."
+  },
+  "08-30": {
+    "historyEvent": "1922: Başkomutanlık Meydan Muharebesi'nde zafer kazanıldı."
+  },
+  "09-09": {
+    "historyEvent": "1922: İzmir kurtuldu."
   },
   "10-04": {
     "folkCalendar": "Yaprak Dökümü",
     "historyEvent": "Dünya Hayvanları Koruma Günü (1931'den beri)."
+  },
+  "10-29": {
+    "historyEvent": "1923: Cumhuriyet ilan edildi."
+  },
+  "11-01": {
+    "historyEvent": "1922: Saltanat kaldırıldı."
+  },
+  "11-10": {
+    "historyEvent": "1938: Mustafa Kemal Atatürk Dolmabahçe Sarayı'nda hayatını kaybetti."
+  },
+  "12-05": {
+    "historyEvent": "1934: Türk kadınına seçme ve seçilme hakkı tanındı."
   }
 }

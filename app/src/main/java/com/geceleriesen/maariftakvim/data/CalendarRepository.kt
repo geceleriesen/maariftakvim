@@ -1,6 +1,7 @@
 package com.geceleriesen.maariftakvim.data
 
 import android.content.Context
+import com.geceleriesen.maariftakvim.domain.DailyContent
 import com.geceleriesen.maariftakvim.domain.TurkishCalendar
 import java.time.LocalDate
 import java.util.Locale
@@ -10,7 +11,30 @@ class CalendarRepository(private val context: Context) {
 
     fun getDay(date: LocalDate = LocalDate.now()): CalendarDay {
         val info = TurkishCalendar.info(date)
-        val extras = loadExtras(date)
+        val daily = DailyContent.forDate(date)
+        val x = loadExtras(date)
+
+        fun str(key: String): String = x?.optString(key, "").orEmpty()
+
+        // data.json'da arka yaprak alanlari varsa hesaplanan icerigin ustune yazar
+        val ownRiddle = str("riddle")
+        val ownJoke = str("joke")
+        val riddle: String
+        val riddleAnswer: String
+        val joke: String
+        if (ownRiddle.isNotEmpty()) {
+            riddle = ownRiddle
+            riddleAnswer = str("riddleAnswer")
+            joke = ""
+        } else if (ownJoke.isNotEmpty()) {
+            riddle = ""
+            riddleAnswer = ""
+            joke = ownJoke
+        } else {
+            riddle = daily.riddle
+            riddleAnswer = daily.riddleAnswer
+            joke = daily.joke
+        }
 
         return CalendarDay(
             gregorianText = info.gregorianText,
@@ -20,11 +44,16 @@ class CalendarRepository(private val context: Context) {
             rumiDate = info.rumiText,
             dayOfYear = info.dayOfYear,
             daysLeftInYear = info.daysLeftInYear,
-            quote = extras?.optString("quote", "").orEmpty(),
-            quoteAuthor = extras?.optString("quoteAuthor", "").orEmpty(),
-            folkCalendar = extras?.optString("folkCalendar", "").orEmpty(),
-            historyEvent = extras?.optString("historyEvent", "").orEmpty(),
-            recipe = extras?.optString("recipe", "").orEmpty()
+            quote = str("quote"),
+            quoteAuthor = str("quoteAuthor"),
+            folkCalendar = str("folkCalendar"),
+            historyEvent = str("historyEvent"),
+            menu = str("menu").ifEmpty { daily.menu },
+            girlNames = str("girlNames").ifEmpty { daily.girlNames },
+            boyNames = str("boyNames").ifEmpty { daily.boyNames },
+            riddle = riddle,
+            riddleAnswer = riddleAnswer,
+            joke = joke
         )
     }
 

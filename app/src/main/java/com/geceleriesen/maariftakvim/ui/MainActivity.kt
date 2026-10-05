@@ -7,7 +7,9 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
+import com.geceleriesen.maariftakvim.data.AgendaRepository
 import com.geceleriesen.maariftakvim.data.CalendarRepository
+import com.geceleriesen.maariftakvim.data.CityResolver
 import com.geceleriesen.maariftakvim.data.Settings
 import com.geceleriesen.maariftakvim.network.CityData
 import com.geceleriesen.maariftakvim.network.WeatherPrayerService
@@ -44,9 +46,10 @@ class MainActivity : Activity() {
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             window.attributes = lp
         }
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         page = CalendarPageView(this)
+        // Dokun: yapragi cevir (on yuz / arka yuz). Uzun bas: ayarlar.
+        page.setOnClickListener { flip() }
         page.setOnLongClickListener {
             openSettings()
             true
@@ -59,6 +62,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        applyKeepScreenOn()
         page.removeCallbacks(ticker)
         ticker.run()
     }
@@ -78,6 +82,22 @@ class MainActivity : Activity() {
         if (hasFocus) hideSystemBars()
     }
 
+    private fun applyKeepScreenOn() {
+        if (Settings(this).keepScreenOn) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
+    private fun flip() {
+        page.animate().scaleX(0f).setDuration(150).withEndAction {
+            val d = page.data
+            if (d != null) page.data = d.copy(showBack = !d.showBack)
+            page.animate().scaleX(1f).setDuration(150).start()
+        }.start()
+    }
+
     private fun openSettings() {
         startActivity(Intent(this, SettingsActivity::class.java))
     }
@@ -92,7 +112,7 @@ class MainActivity : Activity() {
             .setMessage(
                 "Takvimde iki şehrin vakitleri, saati ve havası görünür. " +
                     "Şehirlerini şimdi seçmek ister misin?\n\n" +
-                    "Bunu sonra da yapabilirsin: takvim ekranına uzun bas."
+                    "Yaprağı çevirmek için ekrana dokun, ayarlar için uzun bas."
             )
             .setPositiveButton("Seç") { _, _ -> openSettings() }
             .setNegativeButton("Şimdi değil", null)
@@ -119,25 +139,31 @@ class MainActivity : Activity() {
 
     private fun refresh() {
         val today = LocalDate.now()
-        val day = CalendarRepository(this).getDay(today)
+        val baseDay = CalendarRepository(this).getDay(today)
 
         val settings = Settings(this)
-        val c1 = settings.city1
+        val saved1 = settings.city1
         val c2 = settings.city2
-        val z1 = c1.zoneId()
-        val z2 = c2.zoneId()
+        val showAgenda = settings.showAgenda
+        val showBack = page.data?.showBack ?: false
 
         // Once cevrimdisi gorunumu hemen goster
-        page.data = PageData(day, today, blankCity(c1.name), blankCity(c2.name), z1, z2)
+        val firstName = if (settings.autoLocation) "Konumum" else saved1.name
+        page.data = PageData(baseDay, today, blankCity(firstName), blankCity(c2.name), saved1.zoneId(), c2.zoneId(), showBack)
 
         val dir = filesDir
         scope.launch {
+            val c1 = CityResolver.city1(this@MainActivity)
             val a = async { WeatherPrayerService.fetchCityData(dir, c1.name, c1.lat, c1.lon) }
             val b = async { WeatherPrayerService.fetchCityData(dir, c2.name, c2.lat, c2.lon) }
+            val agenda = if (showAgenda) AgendaRepository(this@MainActivity).nextEventText() else ""
             val first = a.await()
             val second = b.await()
-            val fresh = PageData(day.copy(dayLengthInfo = first.dayLengthInfo), today, first, second, z1, z2)
-            runOnUiThread { page.data = fresh }
+            val day = baseDay.copy(dayLengthInfo = first.dayLengthInfo, agenda = agenda)
+            runOnUiThread {
+                val back = page.data?.showBack ?: false
+                page.data = PageData(day, today, first, second, c1.zoneId(), c2.zoneId(), back)
+            }
         }
     }
 }

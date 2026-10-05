@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -28,6 +30,14 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
+
+        <receiver
+            android:name=".ui.wallpaper.WallpaperReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".ui.widget.MaarifWidgetReceiver"

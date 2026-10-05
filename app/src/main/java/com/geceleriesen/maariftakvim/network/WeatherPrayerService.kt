@@ -30,7 +30,8 @@ data class CityData(
     val ikindi: String,
     val aksam: String,
     val yatsi: String,
-    val dayLengthInfo: String = ""
+    val dayLengthInfo: String = "",
+    val weatherCode: Int = -1
 )
 
 object WeatherPrayerService {
@@ -55,10 +56,10 @@ object WeatherPrayerService {
         lon: Double,
         date: LocalDate = LocalDate.now()
     ): CityData = withContext(Dispatchers.IO) {
-        val temp = try {
-            fetchTemperature(lat, lon)
+        val (temp, weatherCode) = try {
+            fetchWeather(lat, lon)
         } catch (e: Exception) {
-            "--"
+            Pair("--", -1)
         }
         val today = timesFor(dir, lat, lon, date)
         val yesterday = timesFor(dir, lat, lon, date.minusDays(1))
@@ -77,15 +78,19 @@ object WeatherPrayerService {
             ikindi = today?.ikindi ?: NO_TIME,
             aksam = today?.aksam ?: NO_TIME,
             yatsi = today?.yatsi ?: NO_TIME,
-            dayLengthInfo = dayInfo
+            dayLengthInfo = dayInfo,
+            weatherCode = weatherCode
         )
     }
 
-    private fun fetchTemperature(lat: Double, lon: Double): String {
+    // Sicaklik metni ve WMO hava kodu (ikon icin); kod okunamazsa -1
+    private fun fetchWeather(lat: Double, lon: Double): Pair<String, Int> {
         val q = String.format(Locale.ROOT, "latitude=%.4f&longitude=%.4f&current_weather=true", lat, lon)
         val body = httpGet("https://api.open-meteo.com/v1/forecast?$q")
-        val t = JSONObject(body).getJSONObject("current_weather").getDouble("temperature")
-        return "${Math.round(t)}°C"
+        val cw = JSONObject(body).getJSONObject("current_weather")
+        val t = cw.getDouble("temperature")
+        val code = cw.optInt("weathercode", cw.optInt("weather_code", -1))
+        return Pair("${Math.round(t)}°C", code)
     }
 
     private fun timesFor(dir: File, lat: Double, lon: Double, date: LocalDate): DayTimes? {

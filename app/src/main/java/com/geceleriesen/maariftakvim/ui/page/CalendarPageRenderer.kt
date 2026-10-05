@@ -25,12 +25,13 @@ data class PageData(
     val left: CityData,
     val right: CityData,
     val leftZone: ZoneId = ZoneId.systemDefault(),
-    val rightZone: ZoneId = ZoneId.systemDefault()
+    val rightZone: ZoneId = ZoneId.systemDefault(),
+    val showBack: Boolean = false
 )
 
 /**
- * Takvim yapragini herhangi bir Canvas'a cizer (tam ekran, duvar kagidi, widget resmi).
- * Dikey eksende 1000 birim genislikli sanal bir koordinat sistemi kullanir.
+ * Takvim yapragini herhangi bir Canvas'a cizer (tam ekran, kilit ekrani resmi).
+ * Genisligi 1000 birim olan sanal bir koordinat sistemi kullanir.
  */
 class CalendarPageRenderer {
 
@@ -39,6 +40,10 @@ class CalendarPageRenderer {
         private const val BASE_H = 1600f
         private const val BOX_H = 396f
     }
+
+    private class Block(val title: String, val body: String, val note: String = "")
+
+    private class Row(val height: Float, val draw: (Float) -> Unit)
 
     private val ink = 0xFF2B2118.toInt()
     private val inkSoft = 0xFF5A4A38.toInt()
@@ -52,37 +57,31 @@ class CalendarPageRenderer {
     private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
 
-    fun draw(canvas: Canvas, width: Int, height: Int, data: PageData, now: LocalTime = LocalTime.now()) {
+    /**
+     * topInset: sayfanin ustunde birakilacak piksel (kilit ekraninda saat/bildirim icin).
+     * Kagit zemin tum ekrani kaplar, sayfa icerigi bu boslugun altina cizilir.
+     */
+    fun draw(canvas: Canvas, width: Int, height: Int, data: PageData, topInset: Int = 0) {
         val w = width.toFloat()
         val h = height.toFloat()
 
         drawPaper(canvas, w, h)
 
+        val inset = topInset.toFloat()
         val s = w / VW
-        val vh = h / s
+        val vh = (h - inset) / s
         val k = max(1f, vh / BASE_H)
 
         canvas.save()
+        canvas.translate(0f, inset)
         canvas.scale(s, s)
 
         drawFrame(canvas, vh)
-        drawHeader(canvas, data)
-        drawTitle(canvas, data)
-
-        val clockY = 480f * k
-        val boxTop = 640f * k
-        drawClock(canvas, 167f, clockY, 78f, LocalTime.now(data.leftZone))
-        drawClock(canvas, 833f, clockY, 78f, LocalTime.now(data.rightZone))
-        txt(canvas, data.left.temp, 167f, clockY + 78f + 52f, 38f, ink, serifBold, 200f)
-        txt(canvas, data.right.temp, 833f, clockY + 78f + 52f, 38f, ink, serifBold, 200f)
-
-        drawPrayerBox(canvas, 52f, boxTop, 230f, data.left)
-        drawPrayerBox(canvas, 718f, boxTop, 230f, data.right)
-
-        // Dev gun numarasi
-        txt(canvas, data.day.dayNumber, 500f, boxTop + 372f, 480f, ink, condensedBold, 410f)
-
-        drawLowerPart(canvas, data, boxTop, vh)
+        if (data.showBack) {
+            drawBack(canvas, data, vh)
+        } else {
+            drawFront(canvas, data, vh, k)
+        }
 
         canvas.restore()
     }
@@ -142,7 +141,71 @@ class CalendarPageRenderer {
         }
     }
 
-    // ---------- Ust bolum ----------
+    // ---------- Ön yüz ----------
+
+    private fun drawFront(canvas: Canvas, d: PageData, vh: Float, k: Float) {
+        drawHeader(canvas, d)
+        txt(canvas, d.day.gregorianText, 500f, 362f, 74f, ink, serifBold, 900f)
+
+        // Saatler, vakit kutulari, gun adi ve alt metinler tek grup: basligin altindaki
+        // bos alanda dikey ortalanir (uzun ekranlarda parcalar birbirinden kopmasin).
+        val rows = lowerRows(canvas, d)
+        var rowsTotal = 0f
+        for (r in rows) rowsTotal += r.height
+
+        val groupH = 252f + BOX_H + 130f + rowsTotal
+        val space = (vh - 110f) - 390f
+        val g = 390f + max(0f, (space - groupH) * 0.5f)
+
+        val clockY = g + 78f
+        val boxTop = g + 252f
+        val tempY = clockY + 78f + 52f
+
+        drawClock(canvas, 167f, clockY, 78f, LocalTime.now(d.leftZone))
+        drawClock(canvas, 833f, clockY, 78f, LocalTime.now(d.rightZone))
+
+        drawWeatherIcon(canvas, 167f - 70f, tempY - 14f, 50f, d.left.weatherCode)
+        txt(canvas, d.left.temp, 167f + 26f, tempY, 38f, ink, serifBold, 120f)
+        drawWeatherIcon(canvas, 833f - 70f, tempY - 14f, 50f, d.right.weatherCode)
+        txt(canvas, d.right.temp, 833f + 26f, tempY, 38f, ink, serifBold, 120f)
+
+        drawPrayerBox(canvas, 52f, boxTop, 230f, d.left)
+        drawPrayerBox(canvas, 718f, boxTop, 230f, d.right)
+
+        // Dev gun numarasi ve gun adi
+        txt(canvas, d.day.dayNumber, 500f, boxTop + 372f, 480f, ink, condensedBold, 410f)
+        txt(canvas, d.day.dayName, 500f, boxTop + BOX_H + 100f, 100f, ink, serifBold, 800f)
+
+        var y = boxTop + BOX_H + 130f
+        for (r in rows) {
+            r.draw(y)
+            y += r.height
+        }
+
+        drawFooter(canvas, vh, "Büyük Saatli Maarif Takvimi")
+    }
+
+    private fun lowerRows(canvas: Canvas, d: PageData): List<Row> {
+        val day = d.day
+        val rows = ArrayList<Row>()
+
+        if (day.folkCalendar.isNotEmpty()) {
+            rows.add(Row(46f) { top -> txt(canvas, "(${day.folkCalendar})", 500f, top + 32f, 30f, inkSoft, serif, 880f) })
+        }
+        if (day.historyEvent.isNotEmpty()) {
+            val l = layoutOf(day.historyEvent, 30f, inkSoft, serif, 860f)
+            rows.add(Row(l.height + 12f) { top -> drawLayout(canvas, l, 500f, top, 860f) })
+        }
+        if (day.agenda.isNotEmpty()) {
+            rows.add(Row(52f) { top -> txt(canvas, "[AJANDA]: ${day.agenda}", 500f, top + 38f, 30f, ink, serifBold, 880f) })
+        }
+        if (day.quote.isNotEmpty()) {
+            val author = if (day.quoteAuthor.isNotEmpty()) " — ${day.quoteAuthor}" else ""
+            val l = layoutOf("“${day.quote}”$author", 28f, inkSoft, serifItalic, 840f)
+            rows.add(Row(l.height + 40f) { top -> drawLayout(canvas, l, 500f, top + 28f, 840f) })
+        }
+        return rows
+    }
 
     private fun threeLines(dateText: String, label: String): List<String> {
         val parts = dateText.trim().split(" ")
@@ -184,11 +247,77 @@ class CalendarPageRenderer {
         canvas.drawLine(60f, 274f, VW - 60f, 274f, strokePaint)
     }
 
-    private fun drawTitle(canvas: Canvas, d: PageData) {
-        txt(canvas, d.day.gregorianText, 500f, 362f, 74f, ink, serifBold, 900f)
+    // ---------- Arka yaprak ----------
+
+    private fun drawBack(canvas: Canvas, d: PageData, vh: Float) {
+        val day = d.day
+        txt(canvas, day.gregorianText, 500f, 130f, 44f, ink, serifBold, 880f)
+
+        val blocks = ArrayList<Block>()
+        if (day.menu.isNotEmpty()) blocks.add(Block("GÜNÜN MENÜSÜ", day.menu))
+        if (day.girlNames.isNotEmpty() || day.boyNames.isNotEmpty()) {
+            blocks.add(Block("BU GÜN DOĞANLARA", "Kız: ${day.girlNames}\nErkek: ${day.boyNames}"))
+        }
+        if (day.riddle.isNotEmpty()) {
+            blocks.add(Block("GÜNÜN BİLMECESİ", day.riddle, "Cevap: ${day.riddleAnswer}"))
+        }
+        if (day.joke.isNotEmpty()) blocks.add(Block("GÜNÜN FIKRASI", day.joke))
+        if (day.historyEvent.isNotEmpty()) blocks.add(Block("TARİHTE BUGÜN", day.historyEvent))
+
+        val top = 190f
+        val avail = (vh - 150f) - top
+
+        // Metin sigmazsa yazi boyutunu kucult
+        var bodies: List<StaticLayout> = emptyList()
+        var notes: List<StaticLayout?> = emptyList()
+        for (size in listOf(46f, 42f, 38f, 34f, 30f, 27f, 24f)) {
+            bodies = blocks.map { layoutOf(it.body, size, ink, serif, 820f) }
+            notes = blocks.map { b ->
+                if (b.note.isEmpty()) null else layoutOf(b.note, size - 4f, inkSoft, serifItalic, 820f)
+            }
+            var total = 0f
+            for (i in blocks.indices) total += blockHeight(bodies[i], notes[i])
+            if (total <= avail * 0.85f) break
+        }
+
+        var total = 0f
+        for (i in blocks.indices) total += blockHeight(bodies[i], notes[i])
+        val gap = max(24f, (avail - total) / (blocks.size + 1))
+
+        var y = top + gap
+        for (i in blocks.indices) {
+            txt(canvas, blocks[i].title, 500f, y + 42f, 42f, ink, serifBold, 800f)
+            strokePaint.color = ink
+            strokePaint.strokeWidth = 2f
+            canvas.drawLine(430f, y + 62f, 570f, y + 62f, strokePaint)
+
+            drawLayout(canvas, bodies[i], 500f, y + 80f, 820f)
+            var h = 80f + bodies[i].height
+            val n = notes[i]
+            if (n != null) {
+                drawLayout(canvas, n, 500f, y + h + 10f, 820f)
+                h += 10f + n.height
+            }
+            y += h + gap
+            if (i < blocks.size - 1) {
+                canvas.drawLine(380f, y - gap / 2f, 620f, y - gap / 2f, strokePaint)
+            }
+        }
+
+        drawFooter(canvas, vh, "Yaprağı çevirmek için dokun")
     }
 
-    // ---------- Saat ve vakit kutulari ----------
+    private fun blockHeight(body: StaticLayout, note: StaticLayout?): Float =
+        80f + body.height + (if (note != null) 10f + note.height else 0f)
+
+    private fun drawFooter(canvas: Canvas, vh: Float, text: String) {
+        strokePaint.color = ink
+        strokePaint.strokeWidth = 2f
+        canvas.drawLine(60f, vh - 100f, VW - 60f, vh - 100f, strokePaint)
+        txt(canvas, text, 500f, vh - 62f, 26f, inkSoft, serif, 800f)
+    }
+
+    // ---------- Saat, hava ikonu, vakit kutulari ----------
 
     private fun drawClock(canvas: Canvas, cx: Float, cy: Float, r: Float, now: LocalTime) {
         fillPaint.color = 0x33FFFFFF
@@ -225,6 +354,71 @@ class CalendarPageRenderer {
         strokePaint.strokeCap = Paint.Cap.BUTT
     }
 
+    /** WMO hava kodundan basit cizgi ikonu: gunes, bulut, yagmur, kar, sis, firtina. */
+    private fun drawWeatherIcon(canvas: Canvas, cx: Float, cy: Float, size: Float, code: Int) {
+        if (code < 0) return
+        when {
+            code == 0 -> sun(canvas, cx, cy, size * 0.3f)
+            code == 1 || code == 2 -> {
+                sun(canvas, cx + size * 0.14f, cy - size * 0.12f, size * 0.2f)
+                cloud(canvas, cx - size * 0.04f, cy + size * 0.1f, size * 0.8f)
+            }
+            code in 45..48 -> {
+                cloud(canvas, cx, cy - size * 0.1f, size)
+                strokePaint.color = inkSoft
+                strokePaint.strokeWidth = 3f
+                canvas.drawLine(cx - size * 0.4f, cy + size * 0.28f, cx + size * 0.4f, cy + size * 0.28f, strokePaint)
+                canvas.drawLine(cx - size * 0.3f, cy + size * 0.42f, cx + size * 0.3f, cy + size * 0.42f, strokePaint)
+            }
+            code in 51..67 || code in 80..82 -> {
+                cloud(canvas, cx, cy - size * 0.1f, size)
+                strokePaint.color = ink
+                strokePaint.strokeWidth = 3.5f
+                for (i in -1..1) {
+                    val x = cx + i * size * 0.26f
+                    canvas.drawLine(x, cy + size * 0.28f, x - size * 0.06f, cy + size * 0.46f, strokePaint)
+                }
+            }
+            code in 71..77 || code in 85..86 -> {
+                cloud(canvas, cx, cy - size * 0.1f, size)
+                fillPaint.color = ink
+                for (i in -1..1) {
+                    canvas.drawCircle(cx + i * size * 0.26f, cy + size * 0.38f, size * 0.06f, fillPaint)
+                }
+            }
+            code in 95..99 -> {
+                cloud(canvas, cx, cy - size * 0.1f, size)
+                strokePaint.color = ink
+                strokePaint.strokeWidth = 4f
+                canvas.drawLine(cx + size * 0.06f, cy + size * 0.24f, cx - size * 0.1f, cy + size * 0.38f, strokePaint)
+                canvas.drawLine(cx - size * 0.1f, cy + size * 0.38f, cx + size * 0.08f, cy + size * 0.38f, strokePaint)
+                canvas.drawLine(cx + size * 0.08f, cy + size * 0.38f, cx - size * 0.06f, cy + size * 0.52f, strokePaint)
+            }
+            else -> cloud(canvas, cx, cy, size)
+        }
+    }
+
+    private fun sun(canvas: Canvas, cx: Float, cy: Float, r: Float) {
+        fillPaint.color = ink
+        canvas.drawCircle(cx, cy, r, fillPaint)
+        strokePaint.color = ink
+        strokePaint.strokeWidth = 3f
+        for (i in 0 until 8) {
+            val a = Math.toRadians(i * 45.0)
+            val sx = sin(a).toFloat()
+            val cs = cos(a).toFloat()
+            canvas.drawLine(cx + sx * r * 1.4f, cy - cs * r * 1.4f, cx + sx * r * 1.9f, cy - cs * r * 1.9f, strokePaint)
+        }
+    }
+
+    private fun cloud(canvas: Canvas, cx: Float, cy: Float, s: Float) {
+        fillPaint.color = inkSoft
+        canvas.drawCircle(cx - 0.25f * s, cy, 0.22f * s, fillPaint)
+        canvas.drawCircle(cx, cy - 0.12f * s, 0.28f * s, fillPaint)
+        canvas.drawCircle(cx + 0.27f * s, cy + 0.02f * s, 0.2f * s, fillPaint)
+        canvas.drawRect(cx - 0.25f * s, cy, cx + 0.27f * s, cy + 0.22f * s, fillPaint)
+    }
+
     private fun drawPrayerBox(canvas: Canvas, left: Float, top: Float, width: Float, c: CityData) {
         strokePaint.color = ink
         strokePaint.strokeWidth = 3f
@@ -248,39 +442,6 @@ class CalendarPageRenderer {
             txt(canvas, time, left + width - 16f, y, 28f, ink, serifBold, 90f, Paint.Align.RIGHT)
             y += 52f
         }
-    }
-
-    // ---------- Alt bolum ----------
-
-    private fun drawLowerPart(canvas: Canvas, d: PageData, boxTop: Float, vh: Float) {
-        val day = d.day
-        var y = boxTop + BOX_H + 120f
-
-        txt(canvas, day.dayName, 500f, y, 100f, ink, serifBold, 800f)
-        y += 56f
-
-        if (day.folkCalendar.isNotEmpty()) {
-            txt(canvas, "(${day.folkCalendar})", 500f, y, 30f, inkSoft, serif, 880f)
-            y += 14f
-        }
-        if (day.historyEvent.isNotEmpty()) {
-            val l = layoutOf(day.historyEvent, 30f, inkSoft, serif, 860f)
-            drawLayout(canvas, l, 500f, y, 860f)
-            y += l.height + 10f
-        }
-
-        if (day.quote.isNotEmpty()) {
-            val author = if (day.quoteAuthor.isNotEmpty()) " — ${day.quoteAuthor}" else ""
-            val l = layoutOf("“${day.quote}”$author", 28f, inkSoft, serifItalic, 840f)
-            val space = (vh - 120f) - y
-            val top = y + max(10f, (space - l.height) / 2f)
-            drawLayout(canvas, l, 500f, top, 840f)
-        }
-
-        strokePaint.color = ink
-        strokePaint.strokeWidth = 2f
-        canvas.drawLine(60f, vh - 100f, VW - 60f, vh - 100f, strokePaint)
-        txt(canvas, "Büyük Saatli Maarif Takvimi", 500f, vh - 62f, 26f, inkSoft, serif, 800f)
     }
 
     // ---------- Yazi yardimcilari ----------

@@ -13,5 +13,13 @@ data class CalendarDay(
     val quoteAuthor: String = "",
     val folkCalendar: String = "",
     val historyEvent: String = "",
-    val recipe: String = ""
+    // Arka yaprak
+    val menu: String = "",
+    val girlNames: String = "",
+    val boyNames: String = "",
+    val riddle: String = "",
+    val riddleAnswer: String = "",
+    val joke: String = "",
+    // Takvim iznine bagli, yalniz tam ekranda gosterilir
+    val agenda: String = ""
 )
