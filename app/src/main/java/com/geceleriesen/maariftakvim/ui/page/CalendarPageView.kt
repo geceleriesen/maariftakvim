@@ -6,7 +6,7 @@ import android.view.View
 
 class CalendarPageView(context: Context) : View(context) {
 
-    private val renderer = CalendarPageRenderer()
+    private val renderer = CalendarPageRenderer(FontLoader.numberFace(context))
     private val tick = Runnable { invalidate() }
 
     var data: PageData? = null

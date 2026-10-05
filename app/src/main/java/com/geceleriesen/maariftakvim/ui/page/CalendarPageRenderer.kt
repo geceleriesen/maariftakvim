@@ -33,7 +33,7 @@ data class PageData(
  * Takvim yapragini herhangi bir Canvas'a cizer (tam ekran, kilit ekrani resmi).
  * Genisligi 1000 birim olan sanal bir koordinat sistemi kullanir.
  */
-class CalendarPageRenderer {
+class CalendarPageRenderer(numberFace: Typeface? = null) {
 
     companion object {
         private const val VW = 1000f
@@ -52,6 +52,10 @@ class CalendarPageRenderer {
     private val serifBold = Typeface.create(Typeface.SERIF, Typeface.BOLD)
     private val serifItalic = Typeface.create(Typeface.SERIF, Typeface.ITALIC)
     private val condensedBold = Typeface.create("sans-serif-condensed", Typeface.BOLD)
+
+    // Buyuk gun numarasi: ozel font (Anton) yuklenebildiyse o, yoksa sistem fontu
+    private val bigNumber = numberFace ?: condensedBold
+    private val bigNumberSize = if (numberFace != null) 416f else 480f
 
     private val tp = TextPaint(Paint.ANTI_ALIAS_FLAG)
     private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
@@ -130,19 +134,30 @@ class CalendarPageRenderer {
         strokePaint.strokeWidth = 2f
         canvas.drawRect(38f, 38f, VW - 38f, vh - 38f, strokePaint)
 
-        fillPaint.color = ink
+        // Iki cizgi arasinda yildiz motifi
+        strokePaint.color = ink
+        strokePaint.strokeWidth = 1.8f
         var x = 45f
         while (x < VW - 40f) {
-            canvas.drawCircle(x, 31f, 2.5f, fillPaint)
-            canvas.drawCircle(x, vh - 31f, 2.5f, fillPaint)
+            star(canvas, x, 31f)
+            star(canvas, x, vh - 31f)
             x += 26f
         }
         var y = 45f
         while (y < vh - 40f) {
-            canvas.drawCircle(31f, y, 2.5f, fillPaint)
-            canvas.drawCircle(VW - 31f, y, 2.5f, fillPaint)
+            star(canvas, 31f, y)
+            star(canvas, VW - 31f, y)
             y += 26f
         }
+    }
+
+    private fun star(canvas: Canvas, cx: Float, cy: Float) {
+        val r = 4.5f
+        val d = 3.2f
+        canvas.drawLine(cx - r, cy, cx + r, cy, strokePaint)
+        canvas.drawLine(cx, cy - r, cx, cy + r, strokePaint)
+        canvas.drawLine(cx - d, cy - d, cx + d, cy + d, strokePaint)
+        canvas.drawLine(cx - d, cy + d, cx + d, cy - d, strokePaint)
     }
 
     // ---------- Ön yüz ----------
@@ -177,7 +192,7 @@ class CalendarPageRenderer {
         drawPrayerBox(canvas, 718f, boxTop, 230f, d.right)
 
         // Dev gun numarasi ve gun adi
-        txt(canvas, d.day.dayNumber, 500f, boxTop + 372f, 480f, ink, condensedBold, 410f)
+        txt(canvas, d.day.dayNumber, 500f, boxTop + 372f, bigNumberSize, ink, bigNumber, 400f)
         txt(canvas, d.day.dayName, 500f, boxTop + BOX_H + 100f, 100f, ink, serifBold, 800f)
 
         var y = boxTop + BOX_H + 130f

@@ -15,6 +15,7 @@ import com.geceleriesen.maariftakvim.data.CityResolver
 import com.geceleriesen.maariftakvim.data.Settings
 import com.geceleriesen.maariftakvim.network.WeatherPrayerService
 import com.geceleriesen.maariftakvim.ui.page.CalendarPageRenderer
+import com.geceleriesen.maariftakvim.ui.page.FontLoader
 import com.geceleriesen.maariftakvim.ui.page.PageData
 import java.time.LocalDate
 import java.time.ZoneId
@@ -62,7 +63,7 @@ object WallpaperJob {
             val height = metrics.heightPixels
 
             val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            CalendarPageRenderer().draw(Canvas(bmp), width, height, data, (height * TOP_INSET_RATIO).toInt())
+            CalendarPageRenderer(FontLoader.numberFace(app)).draw(Canvas(bmp), width, height, data, (height * TOP_INSET_RATIO).toInt())
 
             WallpaperManager.getInstance(app).setBitmap(bmp, null, true, WallpaperManager.FLAG_LOCK)
             bmp.recycle()
