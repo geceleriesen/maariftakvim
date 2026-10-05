@@ -68,13 +68,17 @@ class CalendarPageRenderer {
         drawPaper(canvas, w, h)
 
         val inset = topInset.toFloat()
-        val s = w / VW
+        // Sayfa genislige gore olceklenir; ekran kisa/genis ise (tablet, katlanir telefon)
+        // yukseklige gore kucultulup ortalanir, boylece icerik asla tasmaz.
+        val s = kotlin.math.min(w / VW, (h - inset) / BASE_H)
         val vh = (h - inset) / s
+        val offsetX = (w / s - VW) / 2f
         val k = max(1f, vh / BASE_H)
 
         canvas.save()
         canvas.translate(0f, inset)
         canvas.scale(s, s)
+        canvas.translate(offsetX, 0f)
 
         drawFrame(canvas, vh)
         if (data.showBack) {
@@ -197,7 +201,8 @@ class CalendarPageRenderer {
             rows.add(Row(l.height + 12f) { top -> drawLayout(canvas, l, 500f, top, 860f) })
         }
         if (day.agenda.isNotEmpty()) {
-            rows.add(Row(52f) { top -> txt(canvas, "[AJANDA]: ${day.agenda}", 500f, top + 38f, 30f, ink, serifBold, 880f) })
+            val agenda = if (day.agenda.length > 46) day.agenda.take(45).trimEnd() + "…" else day.agenda
+            rows.add(Row(52f) { top -> txt(canvas, "[AJANDA]: $agenda", 500f, top + 38f, 30f, ink, serifBold, 880f) })
         }
         if (day.quote.isNotEmpty()) {
             val author = if (day.quoteAuthor.isNotEmpty()) " — ${day.quoteAuthor}" else ""
