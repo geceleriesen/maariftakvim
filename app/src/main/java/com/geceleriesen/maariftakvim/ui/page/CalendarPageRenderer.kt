@@ -405,7 +405,8 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val inset = topInset.toFloat()
         val availH = (h - inset).coerceAtLeast(1f)
         val s = kotlin.math.min(w / VW, availH / BASE_H)
-        val offsetX = (w / s - VW)
+        val offsetX = (w - VW * s) / 2f
+        val offsetY = inset + (availH - BASE_H * s) / 2f
         canvas.save()
         canvas.translate(offsetX, offsetY)
         canvas.scale(s, s)
