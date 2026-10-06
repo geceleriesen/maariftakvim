@@ -164,39 +164,36 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
     private fun drawFront(canvas: Canvas, d: PageData, vh: Float, k: Float) {
         drawHeader(canvas, d)
-        txt(canvas, d.day.gregorianText, 500f, 362f, 74f, ink, serifBold, 900f)
 
-        // Saatler, vakit kutulari, gun adi ve alt metinler tek grup: basligin altindaki
-        // bos alanda dikey ortalanir (uzun ekranlarda parcalar birbirinden kopmasin).
         val rows = lowerRows(canvas, d)
-        var rowsTotal = 0f
-        for (r in rows) rowsTotal += r.height
+        val clockY = 400f
+        val boxTop = 548f
+        val tempY = clockY + 126f
 
-        val groupH = 252f + BOX_H + 130f + rowsTotal
-        val space = (vh - 110f) - 390f
-        val g = 390f + max(0f, (space - groupH) * 0.5f)
+        drawClock(canvas, 167f, clockY, 72f, LocalTime.now(d.leftZone))
+        drawClock(canvas, 833f, clockY, 72f, LocalTime.now(d.rightZone))
 
-        val clockY = g + 78f
-        val boxTop = g + 252f
-        val tempY = clockY + 78f + 52f
-
-        drawClock(canvas, 167f, clockY, 78f, LocalTime.now(d.leftZone))
-        drawClock(canvas, 833f, clockY, 78f, LocalTime.now(d.rightZone))
-
-        drawWeatherIcon(canvas, 167f - 70f, tempY - 14f, 50f, d.left.weatherCode)
-        txt(canvas, d.left.temp, 167f + 26f, tempY, 38f, ink, serifBold, 120f)
-        drawWeatherIcon(canvas, 833f - 70f, tempY - 14f, 50f, d.right.weatherCode)
-        txt(canvas, d.right.temp, 833f + 26f, tempY, 38f, ink, serifBold, 120f)
+        drawWeatherIcon(canvas, 97f, tempY - 14f, 46f, d.left.weatherCode)
+        txt(canvas, d.left.temp, 190f, tempY, 34f, ink, serifBold, 110f)
+        drawWeatherIcon(canvas, 763f, tempY - 14f, 46f, d.right.weatherCode)
+        txt(canvas, d.right.temp, 856f, tempY, 34f, ink, serifBold, 110f)
 
         drawPrayerBox(canvas, 52f, boxTop, 230f, d.left)
         drawPrayerBox(canvas, 718f, boxTop, 230f, d.right)
 
-        // Dev gun numarasi ve gun adi
-        txt(canvas, d.day.dayNumber, 500f, boxTop + 372f, bigNumberSize, ink, bigNumber, 400f)
-        txt(canvas, d.day.dayName, 500f, boxTop + BOX_H + 100f, 100f, ink, serifBold, 800f)
+        val parts = d.day.gregorianText.trim().split(" ")
+        val monthYear = if (parts.size >= 3) parts[1] + " " + parts[2] else d.day.gregorianText
+        txt(canvas, d.day.dayNumber, 500f, boxTop + 188f, 250f, ink, bigNumber, 250f)
+        txt(canvas, monthYear, 500f, boxTop + 246f, 32f, ink, serifBold, 250f)
 
-        var y = boxTop + BOX_H + 130f
+        var y = boxTop + BOX_H + 20f
+        val bottom = vh - 78f
+        if (y + 52f < bottom) {
+            txt(canvas, d.day.dayName, 500f, y + 36f, 40f, ink, serifBold, 640f)
+            y += 58f
+        }
         for (r in rows) {
+            if (y + r.height > bottom) break
             r.draw(y)
             y += r.height
         }
