@@ -76,21 +76,21 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val inset = topInset.toFloat()
         // Sayfa genislige gore olceklenir; ekran kisa/genis ise (tablet, katlanir telefon)
         // yukseklige gore kucultulup ortalanir, boylece icerik asla tasmaz.
-        val s = kotlin.math.min(w / VW, (h - inset) / BASE_H)
-        val vh = (h - inset) / s
-        val offsetX = (w / s - VW) / 2f
-        val k = max(1f, vh / BASE_H)
+        val availH = (h - inset).coerceAtLeast(1f)
+        val s = kotlin.math.min(w / VW, availH / BASE_H)
+        val leafH = BASE_H * s
+        val offsetX = (w - VW * s) / 2f
+        val offsetY = inset + (availH - leafH) / 2f
 
         canvas.save()
-        canvas.translate(0f, inset)
+        canvas.translate(offsetX, offsetY)
         canvas.scale(s, s)
-        canvas.translate(offsetX, 0f)
 
-        drawFrame(canvas, vh)
+        drawFrame(canvas, BASE_H)
         if (data.showBack) {
-            drawBack(canvas, data, vh)
+            drawBack(canvas, data, BASE_H)
         } else {
-            drawFront(canvas, data, vh, k, withHands)
+            drawFront(canvas, data, BASE_H, 1f, withHands)
         }
 
         canvas.restore()
@@ -170,7 +170,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val clockY = CLOCK_Y
         val boxTop = 455f
         val tempY = clockY + 96f
-        val stripTop = vh - 300f
+        val stripTop = 980f
 
         drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone), withHands)
         drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone), withHands)
@@ -185,9 +185,9 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         val parts = d.day.gregorianText.trim().split(" ")
         val monthYear = if (parts.size >= 3) parts[1] + " " + parts[2] else d.day.gregorianText
-        txt(canvas, d.day.dayNumber, 500f, boxTop + 150f, 200f, ink, bigNumber, 230f)
-        txt(canvas, monthYear, 500f, boxTop + 198f, 28f, ink, serifBold, 230f)
-        txt(canvas, d.day.dayName, 500f, boxTop + 248f, 32f, ink, serifBold, 230f)
+        txt(canvas, d.day.dayNumber, 500f, boxTop + 188f, 340f, ink, bigNumber, 430f)
+        txt(canvas, monthYear, 500f, boxTop + 268f, 42f, ink, serifBold, 430f)
+        txt(canvas, d.day.dayName, 500f, boxTop + 328f, 52f, ink, serifBold, 430f)
 
         drawBackStrip(canvas, d, stripTop, vh - 78f)
         drawFooter(canvas, vh, "Büyük Saatli Maarif Takvimi")

@@ -35,7 +35,15 @@ class Settings(context: Context) {
         get() = sp.getBoolean("auto_location", false)
         set(value) {
             sp.edit().putBoolean("auto_location", value).apply()
+            bumpContent()
         }
+
+    val contentVersion: Long
+        get() = sp.getLong("content_ver", 0L)
+
+    fun bumpContent() {
+        sp.edit().putLong("content_ver", contentVersion + 1L).apply()
+    }
 
     /** Tam ekranda takvimdeki siradaki etkinligi goster */
     var showAgenda: Boolean
@@ -103,6 +111,7 @@ class Settings(context: Context) {
             .putString("${key}_lat", c.lat.toString())
             .putString("${key}_lon", c.lon.toString())
             .putString("${key}_zone", c.zone)
+            .putLong("content_ver", sp.getLong("content_ver", 0L) + 1L)
             .apply()
     }
 

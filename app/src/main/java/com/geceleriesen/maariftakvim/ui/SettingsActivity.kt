@@ -167,9 +167,11 @@ class SettingsActivity : Activity() {
         if (settings.autoLocation) {
             settings.autoLocation = false
             refreshRows()
+            refreshLock()
         } else if (LocationHelper.hasPermission(this)) {
             settings.autoLocation = true
             refreshRows()
+            refreshLock()
         } else {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), REQ_LOCATION)
         }
@@ -285,6 +287,7 @@ class SettingsActivity : Activity() {
         if (requestCode == REQ_LOCATION) {
             if (granted) {
                 settings.autoLocation = true
+                refreshLock()
             } else {
                 toast("Konum izni verilmedi, otomatik konum kapalı kaldı.")
             }
@@ -356,6 +359,16 @@ class SettingsActivity : Activity() {
             settings.city2 = pref
         }
         refreshRows()
+        refreshLock()
+    }
+
+    private fun refreshLock() {
+        Thread {
+            try {
+                WallpaperJob.applyNow(this)
+            } catch (e: Exception) {
+            }
+        }.start()
     }
 
     // ---------- Yardımcılar ----------

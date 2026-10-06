@@ -50,6 +50,7 @@ class MaarifLiveWallpaper : WallpaperService() {
         private var h = 0
         private var visible = false
         private var lastNetAt = 0L
+        private var lastContentVer = -1L
 
         @Volatile
         private var loading = false
