@@ -138,7 +138,7 @@ class SettingsActivity : Activity() {
                 12f, false, pad * 2
             )
         )
-        root.addView(textView("İpucu: Takvim ekranında dokununca yaprak döner, uzun basınca buraya gelinir.", 12f, false, pad))
+        root.addView(textView("İpucu: Takvim ekranında çift dokununca yaprak döner, uzun basınca buraya gelinir.", 12f, false, pad))
 
         val scroll = ScrollView(this)
         scroll.setBackgroundColor(0xFFF1E6BE.toInt())

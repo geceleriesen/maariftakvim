@@ -375,7 +375,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
             }
         }
 
-        drawFooter(canvas, vh, "Yaprağı çevirmek için dokun")
+        drawFooter(canvas, vh, "Yaprağı çevirmek için çift dokun")
     }
 
     private fun blockHeight(body: StaticLayout, note: StaticLayout?): Float =
@@ -534,7 +534,8 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         )
         // Satir araligi kutu yuksekligine gore acilir (396 yukseklikte tam 52, eskisiyle ayni)
         val step = (boxH - 136f) / 5f
-        val fs = 1f + 0.35f * (boxH / BASE_BOX_H - 1f)
+        // Yazi en fazla %8 buyur: etiket ile saat ayni satirda cakismasin (tam ekranda kutu cok uzar)
+        val fs = (1f + 0.35f * (boxH / BASE_BOX_H - 1f)).coerceAtMost(1.08f)
         var y = top + 62f + 48f
         for ((label, time) in rows) {
             txt(canvas, label, left + 16f, y, 26f * fs, inkSoft, serif, 110f, Paint.Align.LEFT)

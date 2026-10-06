@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
@@ -58,12 +60,19 @@ class MainActivity : Activity() {
         }
 
         page = CalendarPageView(this)
-        // Dokun: yapragi cevir (on yuz / arka yuz). Uzun bas: ayarlar.
-        page.setOnClickListener { flip() }
-        page.setOnLongClickListener {
-            openSettings()
-            true
-        }
+        // Cift dokun: yapragi cevir (on yuz / arka yuz). Uzun bas: ayarlar.
+        // Tek dokunus bir sey yapmaz; ekran goruntusu alirken yaprak kazara donmesin.
+        val gestures = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: MotionEvent): Boolean = true
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                flip()
+                return true
+            }
+            override fun onLongPress(e: MotionEvent) {
+                openSettings()
+            }
+        })
+        page.setOnTouchListener { _, ev -> gestures.onTouchEvent(ev) }
         setContentView(page)
         hideSystemBars()
 
@@ -124,7 +133,7 @@ class MainActivity : Activity() {
                 "Takvim yaprağını kilit ekranına koyabilirsin; analog saatler orada da gerçekten çalışır.\n\n" +
                     "“Kilit ekranına koy”a basınca açılan ekranda önizlemenin altındaki “Uygula” düğmesine bas " +
                     "ve kilit ekranını seç.\n\n" +
-                    "Yaprağı çevirmek için ekrana dokun, ayarlar için uzun bas."
+                    "Yaprağı çevirmek için ekrana çift dokun, ayarlar için uzun bas."
             )
             .setPositiveButton("Kilit ekranına koy") { _, _ ->
                 if (!LiveWallpaperLauncher.open(this)) {
