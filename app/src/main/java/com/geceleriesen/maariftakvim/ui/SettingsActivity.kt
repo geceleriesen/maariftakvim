@@ -22,7 +22,7 @@ import com.geceleriesen.maariftakvim.data.LocationHelper
 import com.geceleriesen.maariftakvim.data.Settings
 import com.geceleriesen.maariftakvim.network.CityResult
 import com.geceleriesen.maariftakvim.network.CitySearch
-import com.geceleriesen.maariftakvim.ui.wallpaper.MaarifLiveWallpaper
+import com.geceleriesen.maariftakvim.ui.wallpaper.LiveWallpaperLauncher
 import com.geceleriesen.maariftakvim.ui.wallpaper.WallpaperJob
 import com.geceleriesen.maariftakvim.ui.wallpaper.WallpaperScheduler
 
@@ -194,22 +194,10 @@ class SettingsActivity : Activity() {
             refreshRows()
             return
         }
-        try {
-            val i = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-            i.putExtra(
-                WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                ComponentName(this, MaarifLiveWallpaper::class.java)
-            )
-            startActivity(i)
-            settings.liveLock = true
-        } catch (e: Exception) {
-            try {
-                startActivity(Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
-                settings.liveLock = true
-                toast("Listeden Büyük Saatli Maarif Takvimi'ni seç.")
-            } catch (e2: Exception) {
-                toast("Telefon canlı duvar kağıdı ekranını açamadı.")
-            }
+        if (LiveWallpaperLauncher.open(this)) {
+            toast("Açılan ekranda Büyük Saatli Maarif Takvimi'ni seçip kilit ekranına uygula.")
+        } else {
+            toast("Telefon canlı duvar kağıdı ekranını açamadı.")
         }
         refreshRows()
     }

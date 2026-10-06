@@ -7,6 +7,20 @@ namaz vakitleri, halk takvimi notları ve yaprağın arkasında günün menüsü
 > **Durum:** Aktif geliştirme aşamasında. Kod derleniyor ve birim testleri geçiyor, ancak
 > uygulama gerçek cihazlarda henüz geniş çapta denenmedi.
 
+## Kurulum (Android)
+
+1. Telefonda şu bağlantıyı aç ve indir:
+   **https://github.com/geceleriesen/maariftakvim/releases/latest/download/MaarifTakvimi.apk**
+2. İndirilen dosyaya dokun. "Bilinmeyen kaynaklardan yükleme" izni isterse **İzin ver**'e bas.
+   Google "zararlı olabilir" uyarısı verirse **Yine de yükle**'yi seç: uygulama Play Store'da değil,
+   imzalı bir sürüm de henüz yok, bu yüzden uyarı normal.
+3. Uygulamayı aç. İlk açılışta **Kilit ekranına koy**'a bas, açılan ekranda **Uygula**'ya basıp
+   **kilit ekranını** seç. Analog saatler kilit ekranında gerçekten çalışır.
+4. Şehirleri değiştirmek için takvim ekranında **uzun bas** → Ayarlar.
+
+Poco/Xiaomi'de saat takılırsa: Ayarlar → Uygulamalar → Maarif Takvimi → **Pil tasarrufu: Kısıtlama yok**
+ve **Otomatik başlat** açık olsun.
+
 ## Neler var
 
 **Takvim sayfası (tam ekran)**

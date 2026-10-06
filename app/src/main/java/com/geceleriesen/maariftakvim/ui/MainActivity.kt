@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import com.geceleriesen.maariftakvim.data.AgendaRepository
 import com.geceleriesen.maariftakvim.data.CalendarRepository
 import com.geceleriesen.maariftakvim.data.CityResolver
@@ -15,6 +16,7 @@ import com.geceleriesen.maariftakvim.network.CityData
 import com.geceleriesen.maariftakvim.network.WeatherPrayerService
 import com.geceleriesen.maariftakvim.ui.page.CalendarPageView
 import com.geceleriesen.maariftakvim.ui.page.PageData
+import com.geceleriesen.maariftakvim.ui.wallpaper.LiveWallpaperLauncher
 import java.time.LocalDate
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
@@ -119,11 +121,17 @@ class MainActivity : Activity() {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
             .setTitle("Hoş geldin")
             .setMessage(
-                "Takvimde iki şehrin vakitleri, saati ve havası görünür. " +
-                    "Şehirlerini şimdi seçmek ister misin?\n\n" +
+                "Takvim yaprağını kilit ekranına koyabilirsin; analog saatler orada da gerçekten çalışır.\n\n" +
+                    "“Kilit ekranına koy”a basınca açılan ekranda önizlemenin altındaki “Uygula” düğmesine bas " +
+                    "ve kilit ekranını seç.\n\n" +
                     "Yaprağı çevirmek için ekrana dokun, ayarlar için uzun bas."
             )
-            .setPositiveButton("Seç") { _, _ -> openSettings() }
+            .setPositiveButton("Kilit ekranına koy") { _, _ ->
+                if (!LiveWallpaperLauncher.open(this)) {
+                    Toast.makeText(this, "Telefon canlı duvar kağıdı ekranını açamadı.", Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNeutralButton("Şehir seç") { _, _ -> openSettings() }
             .setNegativeButton("Şimdi değil", null)
             .show()
     }

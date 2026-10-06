@@ -1,5 +1,9 @@
 package com.geceleriesen.maariftakvim.ui.wallpaper
 
+import android.app.Activity
+import android.app.WallpaperManager
+import android.content.ComponentName
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Handler
@@ -185,5 +189,32 @@ class MaarifLiveWallpaper : WallpaperService() {
     companion object {
         private const val REFRESH_MS = 10 * 60 * 1000L
         private const val PAPER = 0xFFE7D7A3.toInt()
+    }
+}
+
+/** Sistemin canli duvar kagidi onizleme ekranini acar (ayarlar ve ilk acilis ortak kullanir). */
+object LiveWallpaperLauncher {
+
+    /** Ekran acilabildiyse true doner ve canli modu isaretler. */
+    fun open(activity: Activity): Boolean {
+        val settings = Settings(activity)
+        return try {
+            val i = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+            i.putExtra(
+                WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                ComponentName(activity, MaarifLiveWallpaper::class.java)
+            )
+            activity.startActivity(i)
+            settings.liveLock = true
+            true
+        } catch (e: Exception) {
+            try {
+                activity.startActivity(Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
+                settings.liveLock = true
+                true
+            } catch (e2: Exception) {
+                false
+            }
+        }
     }
 }
