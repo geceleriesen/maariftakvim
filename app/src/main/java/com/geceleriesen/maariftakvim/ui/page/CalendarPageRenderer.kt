@@ -165,40 +165,56 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
     private fun drawFront(canvas: Canvas, d: PageData, vh: Float, k: Float) {
         drawHeader(canvas, d)
 
-        val rows = lowerRows(canvas, d)
-        val clockY = 400f
-        val boxTop = 548f
-        val tempY = clockY + 126f
+        val clockY = 330f
+        val boxTop = 455f
+        val tempY = clockY + 96f
+        val stripTop = vh - 300f
 
-        drawClock(canvas, 167f, clockY, 72f, LocalTime.now(d.leftZone))
-        drawClock(canvas, 833f, clockY, 72f, LocalTime.now(d.rightZone))
+        drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone))
+        drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone))
 
-        drawWeatherIcon(canvas, 97f, tempY - 14f, 46f, d.left.weatherCode)
-        txt(canvas, d.left.temp, 190f, tempY, 34f, ink, serifBold, 110f)
-        drawWeatherIcon(canvas, 763f, tempY - 14f, 46f, d.right.weatherCode)
-        txt(canvas, d.right.temp, 856f, tempY, 34f, ink, serifBold, 110f)
+        drawWeatherIcon(canvas, 104f, tempY - 10f, 36f, d.left.weatherCode)
+        txt(canvas, d.left.temp, 184f, tempY, 28f, ink, serifBold, 100f)
+        drawWeatherIcon(canvas, 770f, tempY - 10f, 36f, d.right.weatherCode)
+        txt(canvas, d.right.temp, 850f, tempY, 28f, ink, serifBold, 100f)
 
-        drawPrayerBox(canvas, 52f, boxTop, 230f, d.left)
-        drawPrayerBox(canvas, 718f, boxTop, 230f, d.right)
+        drawPrayerBox(canvas, 52f, boxTop, 220f, d.left)
+        drawPrayerBox(canvas, 728f, boxTop, 220f, d.right)
 
         val parts = d.day.gregorianText.trim().split(" ")
         val monthYear = if (parts.size >= 3) parts[1] + " " + parts[2] else d.day.gregorianText
-        txt(canvas, d.day.dayNumber, 500f, boxTop + 188f, 250f, ink, bigNumber, 250f)
-        txt(canvas, monthYear, 500f, boxTop + 246f, 32f, ink, serifBold, 250f)
+        txt(canvas, d.day.dayNumber, 500f, boxTop + 150f, 200f, ink, bigNumber, 230f)
+        txt(canvas, monthYear, 500f, boxTop + 198f, 28f, ink, serifBold, 230f)
+        txt(canvas, d.day.dayName, 500f, boxTop + 248f, 32f, ink, serifBold, 230f)
 
-        var y = boxTop + BOX_H + 20f
-        val bottom = vh - 78f
-        if (y + 52f < bottom) {
-            txt(canvas, d.day.dayName, 500f, y + 36f, 40f, ink, serifBold, 640f)
-            y += 58f
-        }
-        for (r in rows) {
-            if (y + r.height > bottom) break
-            r.draw(y)
-            y += r.height
-        }
-
+        drawBackStrip(canvas, d, stripTop, vh - 78f)
         drawFooter(canvas, vh, "Büyük Saatli Maarif Takvimi")
+    }
+
+    private fun drawBackStrip(canvas: Canvas, d: PageData, top: Float, bottom: Float) {
+        val day = d.day
+        strokePaint.color = ink
+        strokePaint.strokeWidth = 2f
+        canvas.drawLine(60f, top, VW - 60f, top, strokePaint)
+        txt(canvas, "ARKA YAPRAK", 500f, top + 28f, 22f, ink, serifBold, 400f)
+
+        val lines = ArrayList<String>()
+        if (day.menu.isNotEmpty()) lines.add("Menü: " + day.menu)
+        if (day.girlNames.isNotEmpty() || day.boyNames.isNotEmpty()) {
+            lines.add("Doğanlar: " + day.girlNames + " / " + day.boyNames)
+        }
+        if (day.riddle.isNotEmpty()) lines.add("Bilmece: " + day.riddle)
+        if (day.riddleAnswer.isNotEmpty()) lines.add("Cevap: " + day.riddleAnswer)
+        if (day.joke.isNotEmpty()) lines.add("Fıkra: " + day.joke)
+        if (day.historyEvent.isNotEmpty()) lines.add("Tarih: " + day.historyEvent)
+
+        var y = top + 52f
+        for (line in lines) {
+            if (y + 28f > bottom) break
+            val l = layoutOf(line, 22f, inkSoft, serif, 860f)
+            drawLayout(canvas, l, 500f, y, 860f)
+            y += l.height + 8f
+        }
     }
 
     private fun lowerRows(canvas: Canvas, d: PageData): List<Row> {

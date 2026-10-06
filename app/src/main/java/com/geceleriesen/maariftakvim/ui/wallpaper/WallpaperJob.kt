@@ -28,7 +28,7 @@ object WallpaperJob {
     const val ACTION_REFRESH = "com.geceleriesen.maariftakvim.action.REFRESH_LOCK"
 
     // Kilit ekraninin ustundeki saat ve bildirimler icin sayfanin ustunde birakilan oran
-    private const val TOP_INSET_RATIO = 0.26f
+    private const val TOP_INSET_RATIO = 0.32f
 
     /**
      * Bugunun takvim yapragini kilit ekrani resmi olarak ayarlar.
