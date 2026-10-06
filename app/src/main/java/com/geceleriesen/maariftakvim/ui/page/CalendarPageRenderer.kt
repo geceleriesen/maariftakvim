@@ -185,7 +185,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         val parts = d.day.gregorianText.trim().split(" ")
         val monthYear = if (parts.size >= 2) d.day.dayNumber + " " + parts[1] else d.day.gregorianText
-        txt(canvas, d.day.dayNumber, 500f, boxTop + 176f, 280f, ink, bigNumber, 400f)
+        txt(canvas, d.day.dayNumber, 500f, boxTop + 172f, 320f, ink, bigNumber, 430f)
         txt(canvas, monthYear, 500f, boxTop + 228f, 40f, ink, serifBold, 400f)
         txt(canvas, d.day.dayName, 500f, boxTop + 280f, 44f, ink, serifBold, 400f)
 
