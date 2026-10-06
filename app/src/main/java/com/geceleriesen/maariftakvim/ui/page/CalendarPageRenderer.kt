@@ -76,21 +76,21 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val inset = topInset.toFloat()
         // Sayfa genislige gore olceklenir; ekran kisa/genis ise (tablet, katlanir telefon)
         // yukseklige gore kucultulup ortalanir, boylece icerik asla tasmaz.
-        val availH = (h - inset).coerceAtLeast(1f)
-        val s = kotlin.math.min(w / VW, availH / BASE_H)
-        val leafH = BASE_H * s
-        val offsetX = (w - VW * s) / 2f
-        val offsetY = inset + (availH - leafH) / 2f
+        val s = kotlin.math.min(w / VW, (h - inset) / BASE_H)
+        val vh = (h - inset) / s
+        val offsetX = (w / s - VW) / 2f
+        val k = max(1f, vh / BASE_H)
 
         canvas.save()
-        canvas.translate(offsetX, offsetY)
+        canvas.translate(0f, inset)
         canvas.scale(s, s)
+        canvas.translate(offsetX, 0f)
 
-        drawFrame(canvas, BASE_H)
+        drawFrame(canvas, vh)
         if (data.showBack) {
-            drawBack(canvas, data, BASE_H)
+            drawBack(canvas, data, vh)
         } else {
-            drawFront(canvas, data, BASE_H, 1f, withHands)
+            drawFront(canvas, data, vh, k, withHands)
         }
 
         canvas.restore()
@@ -185,9 +185,9 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         val parts = d.day.gregorianText.trim().split(" ")
         val monthYear = if (parts.size >= 3) parts[1] + " " + parts[2] else d.day.gregorianText
-        txt(canvas, d.day.dayNumber, 500f, boxTop + 188f, 340f, ink, bigNumber, 430f)
-        txt(canvas, monthYear, 500f, boxTop + 268f, 42f, ink, serifBold, 430f)
-        txt(canvas, d.day.dayName, 500f, boxTop + 328f, 52f, ink, serifBold, 430f)
+        txt(canvas, d.day.dayNumber, 500f, boxTop + 168f, 248f, ink, bigNumber, 360f)
+        txt(canvas, monthYear, 500f, boxTop + 214f, 36f, ink, serifBold, 360f)
+        txt(canvas, d.day.dayName, 500f, boxTop + 262f, 40f, ink, serifBold, 360f)
 
         drawBackStrip(canvas, d, stripTop, vh - 78f)
         drawFooter(canvas, vh, "Büyük Saatli Maarif Takvimi")
@@ -399,8 +399,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val h = height.toFloat()
         val inset = topInset.toFloat()
         val s = kotlin.math.min(w / VW, (h - inset) / BASE_H)
-        val offsetX = (w / s - VW) / 2f
-
+        val offsetX = (w / s - VW)
         canvas.save()
         canvas.translate(0f, inset)
         canvas.scale(s, s)
