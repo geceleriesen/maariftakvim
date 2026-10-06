@@ -19,8 +19,8 @@ import java.time.LocalDate
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
@@ -30,10 +30,18 @@ class MainActivity : Activity() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val tr: Locale = Locale.forLanguageTag("tr-TR")
 
+    private var job: Job? = null
+    private var lastNetworkAt = 0L
+    private val lock = Any()
+
+    // Her 30 sn'de bir bakar: gun degistiyse hemen, degilse 10 dk'da bir veriyi yeniler.
     private val ticker = object : Runnable {
         override fun run() {
-            refresh()
-            page.postDelayed(this, 15 * 60 * 1000L)
+            val d = page.data
+            val now = System.currentTimeMillis()
+            val dateChanged = d != null && d.date != LocalDate.now()
+            if (d == null || dateChanged || now - lastNetworkAt >= REFRESH_MS) refresh()
+            page.postDelayed(this, 30_000L)
         }
     }
 
@@ -64,6 +72,7 @@ class MainActivity : Activity() {
         super.onResume()
         applyKeepScreenOn()
         page.removeCallbacks(ticker)
+        lastNetworkAt = 0L // geri donunce (ayarlar degismis olabilir) hemen yenile
         ticker.run()
     }
 
@@ -145,25 +154,65 @@ class MainActivity : Activity() {
         val saved1 = settings.city1
         val c2 = settings.city2
         val showAgenda = settings.showAgenda
-        val showBack = page.data?.showBack ?: false
+        val autoLoc = settings.autoLocation
 
-        // Once cevrimdisi gorunumu hemen goster
-        val firstName = if (settings.autoLocation) "Konumum" else saved1.name
-        page.data = PageData(baseDay, today, blankCity(firstName), blankCity(c2.name), saved1.zoneId(), c2.zoneId(), showBack)
-
-        val dir = filesDir
-        scope.launch {
-            val c1 = CityResolver.city1(this@MainActivity)
-            val a = async { WeatherPrayerService.fetchCityData(dir, c1.name, c1.lat, c1.lon) }
-            val b = async { WeatherPrayerService.fetchCityData(dir, c2.name, c2.lat, c2.lon) }
-            val agenda = if (showAgenda) AgendaRepository(this@MainActivity).nextEventText() else ""
-            val first = a.await()
-            val second = b.await()
-            val day = baseDay.copy(dayLengthInfo = first.dayLengthInfo, agenda = agenda)
-            runOnUiThread {
-                val back = page.data?.showBack ?: false
-                page.data = PageData(day, today, first, second, c1.zoneId(), c2.zoneId(), back)
-            }
+        // Ilk acilista bos gorunum; sonraki yenilemelerde eldeki veri EKRANDA KALIR (yanip sonme yok)
+        if (page.data == null) {
+            val firstName = if (autoLoc) "Konumum" else saved1.name
+            page.data = PageData(baseDay, today, blankCity(firstName), blankCity(c2.name), saved1.zoneId(), c2.zoneId(), false)
         }
+
+        // Onceki yenileme hala suruyorsa iptal et, eski sonuc yenisinin ustune yazmasin
+        job?.cancel()
+        val dir = filesDir
+        job = scope.launch {
+            val c1 = CityResolver.city1(this@MainActivity)
+            val z1 = c1.zoneId()
+            val z2 = c2.zoneId()
+            val agenda = if (showAgenda) AgendaRepository(this@MainActivity).nextEventText() else ""
+
+            // 1) Diskteki veriyle HEMEN ciz (ag beklemeden)
+            var first = keepWeather(page.data?.left, WeatherPrayerService.cachedCityData(dir, c1.name, c1.lat, c1.lon))
+            var second = keepWeather(page.data?.right, WeatherPrayerService.cachedCityData(dir, c2.name, c2.lat, c2.lon))
+            fun push() {
+                val (f, s2) = synchronized(lock) { Pair(first, second) }
+                val day = baseDay.copy(dayLengthInfo = f.dayLengthInfo, agenda = agenda)
+                runOnUiThread {
+                    if (isDestroyed || isFinishing) return@runOnUiThread
+                    val back = page.data?.showBack ?: false
+                    page.data = PageData(day, today, f, s2, z1, z2, back)
+                }
+            }
+            push()
+
+            // 2) Aga git; hangi sehir once biterse o hemen ekrana yansir
+            val a = launch {
+                val r = WeatherPrayerService.fetchCityData(dir, c1.name, c1.lat, c1.lon, zone = z1)
+                synchronized(lock) { first = keepWeather(first, r) }
+                push()
+            }
+            val b = launch {
+                val r = WeatherPrayerService.fetchCityData(dir, c2.name, c2.lat, c2.lon, zone = z2)
+                synchronized(lock) { second = keepWeather(second, r) }
+                push()
+            }
+            a.join()
+            b.join()
+            // Eksik veri kaldiysa (ag yok) 10 dk beklemeden 2 dk sonra tekrar dene
+            val missing = first.temp == "--" || first.imsak == "--:--" || second.temp == "--" || second.imsak == "--:--"
+            lastNetworkAt = System.currentTimeMillis() - if (missing) REFRESH_MS - 2 * 60_000L else 0L
+        }
+    }
+
+    // Yeni veride sicaklik okunamadiysa (ag yok) ayni sehrin eldeki sicakligini koru
+    private fun keepWeather(old: CityData?, new: CityData): CityData {
+        if (old != null && new.temp == "--" && old.temp != "--" && old.cityName == new.cityName) {
+            return new.copy(temp = old.temp, weatherCode = old.weatherCode)
+        }
+        return new
+    }
+
+    companion object {
+        private const val REFRESH_MS = 10 * 60 * 1000L
     }
 }

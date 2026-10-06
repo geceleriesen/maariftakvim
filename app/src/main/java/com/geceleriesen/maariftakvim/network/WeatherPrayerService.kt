@@ -5,8 +5,11 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
@@ -49,27 +52,55 @@ object WeatherPrayerService {
     private const val TUNE = ""
     private const val CACHE_VERSION = 1
 
-    suspend fun fetchCityData(
+    // Sicaklik onbellegi: bu kadar tazeyse aga hic gitme (Open-Meteo zaten 15 dk'da bir guncellenir)
+    private const val WEATHER_FRESH_MS = 10 * 60 * 1000L
+    // Ag yoksa en fazla bu kadar eski sicakligi goster
+    private const val WEATHER_STALE_MS = 3 * 60 * 60 * 1000L
+
+    /**
+     * Yalniz diskten okur, aga ASLA gitmez; ekrana hemen bir sey koymak icin.
+     * Namaz vakitleri ay onbelleginden, sicaklik son basarili okumadan gelir.
+     */
+    fun cachedCityData(
         dir: File,
         cityName: String,
         lat: Double,
         lon: Double,
         date: LocalDate = LocalDate.now()
+    ): CityData {
+        val w = readWeatherCache(dir, lat, lon, WEATHER_STALE_MS)
+        val today = timesFor(dir, lat, lon, date, allowNetwork = false)
+        val yesterday = timesFor(dir, lat, lon, date.minusDays(1), allowNetwork = false)
+        return build(cityName, w?.first ?: "--", w?.second ?: -1, today, yesterday)
+    }
+
+    /** Sicaklik ve vakitleri PARALEL ceker; biri yavassa digerini bekletmez. */
+    suspend fun fetchCityData(
+        dir: File,
+        cityName: String,
+        lat: Double,
+        lon: Double,
+        date: LocalDate = LocalDate.now(),
+        zone: ZoneId = ZoneId.systemDefault()
     ): CityData = withContext(Dispatchers.IO) {
-        val (temp, weatherCode) = try {
-            fetchWeather(lat, lon)
-        } catch (e: Exception) {
-            Pair("--", -1)
+        // Sehrin kendi takvim gunu (telefondaki saat dilimi farkli olabilir)
+        val cityDate = if (date == LocalDate.now()) LocalDate.now(zone) else date
+        coroutineScope {
+            val weather = async { currentWeather(dir, lat, lon) }
+            val todayD = async { timesFor(dir, lat, lon, cityDate, allowNetwork = true) }
+            val yesterdayD = async { timesFor(dir, lat, lon, cityDate.minusDays(1), allowNetwork = true) }
+            val w = weather.await()
+            build(cityName, w?.first ?: "--", w?.second ?: -1, todayD.await(), yesterdayD.await())
         }
-        val today = timesFor(dir, lat, lon, date)
-        val yesterday = timesFor(dir, lat, lon, date.minusDays(1))
+    }
+
+    private fun build(cityName: String, temp: String, code: Int, today: DayTimes?, yesterday: DayTimes?): CityData {
         val dayInfo = if (today != null) {
             DayLength.describe(today.gunes, today.sunset, yesterday?.gunes, yesterday?.sunset)
         } else {
             ""
         }
-
-        CityData(
+        return CityData(
             cityName = cityName.uppercase(TR),
             temp = temp,
             imsak = today?.imsak ?: NO_TIME,
@@ -79,8 +110,22 @@ object WeatherPrayerService {
             aksam = today?.aksam ?: NO_TIME,
             yatsi = today?.yatsi ?: NO_TIME,
             dayLengthInfo = dayInfo,
-            weatherCode = weatherCode
+            weatherCode = code
         )
+    }
+
+    // ---------- Hava durumu ----------
+
+    // Taze onbellek varsa onu, yoksa agdan; ag yoksa eski (en fazla 3 saat) degeri dondurur.
+    private fun currentWeather(dir: File, lat: Double, lon: Double): Pair<String, Int>? {
+        readWeatherCache(dir, lat, lon, WEATHER_FRESH_MS)?.let { return it }
+        return try {
+            val fresh = fetchWeather(lat, lon)
+            writeWeatherCache(dir, lat, lon, fresh)
+            fresh
+        } catch (e: Exception) {
+            readWeatherCache(dir, lat, lon, WEATHER_STALE_MS)
+        }
     }
 
     // Sicaklik metni ve WMO hava kodu (ikon icin); kod okunamazsa -1
@@ -93,13 +138,39 @@ object WeatherPrayerService {
         return Pair("${Math.round(t)}°C", code)
     }
 
-    private fun timesFor(dir: File, lat: Double, lon: Double, date: LocalDate): DayTimes? {
-        val month = loadMonth(dir, lat, lon, date.year, date.monthValue) ?: return null
+    private fun weatherFile(dir: File, lat: Double, lon: Double): File =
+        File(dir, String.format(Locale.ROOT, "weather_%.2f_%.2f.txt", lat, lon))
+
+    private fun readWeatherCache(dir: File, lat: Double, lon: Double, maxAgeMs: Long): Pair<String, Int>? {
+        return try {
+            val f = weatherFile(dir, lat, lon)
+            if (!f.exists()) return null
+            val parts = f.readText().split("|")
+            if (parts.size != 3) return null
+            if (System.currentTimeMillis() - parts[0].toLong() > maxAgeMs) return null
+            Pair(parts[1], parts[2].toInt())
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun writeWeatherCache(dir: File, lat: Double, lon: Double, w: Pair<String, Int>) {
+        try {
+            weatherFile(dir, lat, lon).writeText("${System.currentTimeMillis()}|${w.first}|${w.second}")
+        } catch (e: Exception) {
+            // onbellek yazilamazsa sorun degil
+        }
+    }
+
+    // ---------- Namaz vakitleri ----------
+
+    private fun timesFor(dir: File, lat: Double, lon: Double, date: LocalDate, allowNetwork: Boolean): DayTimes? {
+        val month = loadMonth(dir, lat, lon, date.year, date.monthValue, allowNetwork) ?: return null
         return month[date.dayOfMonth]
     }
 
-    // Once diskteki aylik onbellege bakar; yoksa indirir ve kaydeder. Internet yoksa null doner.
-    private fun loadMonth(dir: File, lat: Double, lon: Double, year: Int, month: Int): Map<Int, DayTimes>? {
+    // Once diskteki aylik onbellege bakar; yoksa (ve izin varsa) indirir ve kaydeder.
+    private fun loadMonth(dir: File, lat: Double, lon: Double, year: Int, month: Int, allowNetwork: Boolean): Map<Int, DayTimes>? {
         val file = File(dir, cacheName(lat, lon, year, month))
         if (file.exists()) {
             val cached = try {
@@ -109,6 +180,7 @@ object WeatherPrayerService {
             }
             if (cached != null && cached.isNotEmpty()) return cached
         }
+        if (!allowNetwork) return null
 
         val fresh = try {
             downloadMonth(lat, lon, year, month)
@@ -192,6 +264,10 @@ object WeatherPrayerService {
             conn.requestMethod = "GET"
             conn.connectTimeout = 8000
             conn.readTimeout = 8000
+            conn.setRequestProperty("User-Agent", "MaarifTakvimi/1.0 (Android)")
+            conn.setRequestProperty("Accept", "application/json")
+            val code = conn.responseCode
+            if (code !in 200..299) throw java.io.IOException("HTTP $code")
             return conn.inputStream.bufferedReader().use { it.readText() }
         } finally {
             conn.disconnect()

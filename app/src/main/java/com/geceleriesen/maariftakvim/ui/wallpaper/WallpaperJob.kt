@@ -47,8 +47,8 @@ object WallpaperJob {
 
             val (first, second) = runBlocking {
                 coroutineScope {
-                    val a = async { WeatherPrayerService.fetchCityData(dir, c1.name, c1.lat, c1.lon) }
-                    val b = async { WeatherPrayerService.fetchCityData(dir, c2.name, c2.lat, c2.lon) }
+                    val a = async { WeatherPrayerService.fetchCityData(dir, c1.name, c1.lat, c1.lon, zone = c1.zoneId()) }
+                    val b = async { WeatherPrayerService.fetchCityData(dir, c2.name, c2.lat, c2.lon, zone = c2.zoneId()) }
                     Pair(a.await(), b.await())
                 }
             }
@@ -83,12 +83,16 @@ object WallpaperScheduler {
 
     private const val REQUEST_CODE = 1001
 
-    /** Her gece 00:05'ten itibaren gunde bir kez (sistem zamani biraz kaydirabilir). */
+    /**
+     * Siradaki 00:05 icin tek seferlik alarm kurar (Doze'da da calisir). Alarm tetiklenince
+     * receiver bir sonrakini kendisi kurar; setInexactRepeating Doze'da saatlerce kayabiliyordu.
+     */
     fun schedule(context: Context) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val firstAt = LocalDate.now().plusDays(1).atTime(0, 5)
-            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        am.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstAt, AlarmManager.INTERVAL_DAY, pendingIntent(context))
+        val zone = ZoneId.systemDefault()
+        var next = LocalDate.now().atTime(0, 5).atZone(zone)
+        if (!next.toInstant().isAfter(java.time.Instant.now())) next = next.plusDays(1)
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.toInstant().toEpochMilli(), pendingIntent(context))
     }
 
     fun cancel(context: Context) {
@@ -116,8 +120,8 @@ class WallpaperReceiver : BroadcastReceiver() {
         val action = intent.action
         if (action != WallpaperJob.ACTION_REFRESH && action != Intent.ACTION_BOOT_COMPLETED) return
 
-        // Yeniden baslatmada alarmlar silinir, tekrar kur
-        if (action == Intent.ACTION_BOOT_COMPLETED) WallpaperScheduler.schedule(context)
+        // Yeniden baslatmada alarmlar silinir; tek seferlik alarm oldugu icin her tetiklenmede de sonrakini kur
+        WallpaperScheduler.schedule(context)
 
         val pending = goAsync()
         Thread {
