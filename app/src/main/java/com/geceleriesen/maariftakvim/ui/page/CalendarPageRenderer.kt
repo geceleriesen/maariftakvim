@@ -198,7 +198,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         strokePaint.color = ink
         strokePaint.strokeWidth = 2f
         canvas.drawLine(60f, top, VW - 60f, top, strokePaint)
-        txt(canvas, "ARKA YAPRAK", 500f, top + 28f, 22f, ink, serifBold, 400f)
+        txt(canvas, "ARKA YAPRAK", 500f, top + 42f, 34f, ink, serifBold, 520f)
 
         val lines = ArrayList<String>()
         if (day.menu.isNotEmpty()) lines.add("Menü: " + day.menu)
@@ -210,12 +210,12 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         if (day.joke.isNotEmpty()) lines.add("Fıkra: " + day.joke)
         if (day.historyEvent.isNotEmpty()) lines.add("Tarih: " + day.historyEvent)
 
-        var y = top + 52f
+        var y = top + 78f
         for (line in lines) {
-            if (y + 28f > bottom) break
-            val l = layoutOf(line, 22f, inkSoft, serif, 860f)
-            drawLayout(canvas, l, 500f, y, 860f)
-            y += l.height + 8f
+            if (y + 44f > bottom) break
+            val l = layoutOf(line, 36f, ink, serif, 880f)
+            drawLayout(canvas, l, 500f, y, 880f)
+            y += l.height + 16f
         }
     }
 
@@ -305,7 +305,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         // Metin sigmazsa yazi boyutunu kucult
         var bodies: List<StaticLayout> = emptyList()
         var notes: List<StaticLayout?> = emptyList()
-        for (size in listOf(46f, 42f, 38f, 34f, 30f, 27f, 24f)) {
+        for (size in listOf(58f, 54f, 50f, 46f, 42f, 38f)) {
             bodies = blocks.map { layoutOf(it.body, size, ink, serif, 820f) }
             notes = blocks.map { b ->
                 if (b.note.isEmpty()) null else layoutOf(b.note, size - 4f, inkSoft, serifItalic, 820f)
@@ -321,7 +321,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         var y = top + gap
         for (i in blocks.indices) {
-            txt(canvas, blocks[i].title, 500f, y + 42f, 42f, ink, serifBold, 800f)
+            txt(canvas, blocks[i].title, 500f, y + 48f, 52f, ink, serifBold, 860f)
             strokePaint.color = ink
             strokePaint.strokeWidth = 2f
             canvas.drawLine(430f, y + 62f, 570f, y + 62f, strokePaint)
