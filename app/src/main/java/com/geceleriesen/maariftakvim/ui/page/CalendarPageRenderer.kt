@@ -38,14 +38,47 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
     companion object {
         private const val VW = 1000f
         private const val BASE_H = 1600f
-        private const val BOX_H = 396f
-        private const val CLOCK_Y = 378f
+        // Ekran 1600 birimden uzunsa fazla yukseklik (extra) on yuze dagitilir; arka sayfa
+        // seridi sabit yukseklikte kalir ve alta yaslanir. Cok uzun ekranlarda tavan:
+        private const val MAX_EXTRA = 360f
+        private const val BASE_BOX_H = 396f
+        private const val BASE_BOX_TOP = 530f
+        private const val STRIP_H = 528f   // "ARKA YAPRAK" seridinin sabit yuksekligi
         private const val SECOND_RED = 0xFFC62828.toInt()
     }
 
     private class Block(val title: String, val body: String, val note: String = "")
 
     private class Row(val height: Float, val draw: (Float) -> Unit)
+
+    /** Sanal koordinat sisteminin ekrana oturumu: olcek, kayma, sanal yukseklik, fazla yukseklik. */
+    private class Geo(val s: Float, val offsetX: Float, val offsetY: Float, val vh: Float) {
+        val extra: Float get() = (vh - BASE_H).coerceIn(0f, MAX_EXTRA)
+    }
+
+    /** Ust kisimdaki on yuz yerlesimi; extra arttikca baslik, saatler ve vakit kutulari buyur. */
+    private class Front(extra: Float) {
+        val headerStep = 36f + 0.03f * extra
+        val sep1 = 222f + 0.08f * extra
+        val sep2 = sep1 + 52f
+        val boxTop = BASE_BOX_TOP + 0.20f * extra
+        val boxH = BASE_BOX_H + 0.80f * extra
+        val clockY = boxTop - 152f
+        val tempY = clockY + 96f
+        val numberShift = 0.5f * (boxH - BASE_BOX_H)
+    }
+
+    private fun geo(width: Int, height: Int, topInset: Int): Geo {
+        val w = width.toFloat()
+        val availH = (height.toFloat() - topInset).coerceAtLeast(1f)
+        // Sayfa genislige gore olceklenir; ekran kisa/genis ise (tablet, katlanir telefon)
+        // yukseklige gore kucultulup ortalanir, boylece icerik asla tasmaz.
+        val s = kotlin.math.min(w / VW, availH / BASE_H)
+        // Ekran uzunsa (20:9 gibi) sanal yukseklik 1600'un ustune cikar: bosluk birakmak yerine
+        // kart ekranin altina kadar uzar.
+        val vh = max(BASE_H, (availH - 8f) / s)
+        return Geo(s, (w - VW * s) / 2f, topInset.toFloat() + 8f, vh)
+    }
 
     private val ink = 0xFF2B2118.toInt()
     private val inkSoft = 0xFF5A4A38.toInt()
@@ -73,25 +106,17 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         drawPaper(canvas, w, h)
 
-        val inset = topInset.toFloat()
-        // Sayfa genislige gore olceklenir; ekran kisa/genis ise (tablet, katlanir telefon)
-        // yukseklige gore kucultulup ortalanir, boylece icerik asla tasmaz.
-        val availH = (h - inset).coerceAtLeast(1f)
-        val s = kotlin.math.min(w / VW, availH / BASE_H)
-        val vh = BASE_H
-        val offsetX = (w - VW * s) / 2f
-        val offsetY = inset + 8f
-        val k = 1f
+        val g = geo(width, height, topInset)
 
         canvas.save()
-        canvas.translate(offsetX, offsetY)
-        canvas.scale(s, s)
+        canvas.translate(g.offsetX, g.offsetY)
+        canvas.scale(g.s, g.s)
 
-        drawFrame(canvas, vh)
+        drawFrame(canvas, g.vh)
         if (data.showBack) {
-            drawBack(canvas, data, vh)
+            drawBack(canvas, data, g.vh)
         } else {
-            drawFront(canvas, data, vh, k, withHands)
+            drawFront(canvas, data, g.vh, Front(g.extra), withHands)
         }
 
         canvas.restore()
@@ -165,30 +190,29 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
     // ---------- Ön yüz ----------
 
-    private fun drawFront(canvas: Canvas, d: PageData, vh: Float, k: Float, withHands: Boolean) {
-        drawHeader(canvas, d)
+    private fun drawFront(canvas: Canvas, d: PageData, vh: Float, f: Front, withHands: Boolean) {
+        drawHeader(canvas, d, f)
 
-        val clockY = CLOCK_Y
-        val boxTop = 530f
-        val tempY = clockY + 96f
-        val stripTop = boxTop + BOX_H + 36f
+        val boxTop = f.boxTop
+        val stripTop = vh - 110f - STRIP_H
 
-        drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone), withHands)
-        drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone), withHands)
+        drawClock(canvas, 167f, f.clockY, 58f, LocalTime.now(d.leftZone), withHands)
+        drawClock(canvas, 833f, f.clockY, 58f, LocalTime.now(d.rightZone), withHands)
 
-        drawWeatherIcon(canvas, 104f, tempY - 10f, 36f, d.left.weatherCode)
-        txt(canvas, d.left.temp, 184f, tempY, 28f, ink, serifBold, 100f)
-        drawWeatherIcon(canvas, 770f, tempY - 10f, 36f, d.right.weatherCode)
-        txt(canvas, d.right.temp, 850f, tempY, 28f, ink, serifBold, 100f)
+        drawWeatherIcon(canvas, 104f, f.tempY - 10f, 36f, d.left.weatherCode)
+        txt(canvas, d.left.temp, 184f, f.tempY, 28f, ink, serifBold, 100f)
+        drawWeatherIcon(canvas, 770f, f.tempY - 10f, 36f, d.right.weatherCode)
+        txt(canvas, d.right.temp, 850f, f.tempY, 28f, ink, serifBold, 100f)
 
-        drawPrayerBox(canvas, 52f, boxTop, 220f, d.left)
-        drawPrayerBox(canvas, 728f, boxTop, 220f, d.right)
+        drawPrayerBox(canvas, 52f, boxTop, 220f, f.boxH, d.left)
+        drawPrayerBox(canvas, 728f, boxTop, 220f, f.boxH, d.right)
 
         val parts = d.day.gregorianText.trim().split(" ")
         val monthYear = if (parts.size >= 3) d.day.dayNumber + " " + parts[1] + " " + parts[2] else d.day.gregorianText
-        txt(canvas, d.day.dayNumber, 500f, boxTop + 172f, 320f, ink, bigNumber, 430f)
-        txt(canvas, monthYear, 500f, boxTop + 228f, 40f, ink, serifBold, 400f)
-        txt(canvas, d.day.dayName, 500f, boxTop + 280f, 44f, ink, serifBold, 400f)
+        val c = boxTop + f.numberShift
+        txt(canvas, d.day.dayNumber, 500f, c + 172f, 320f, ink, bigNumber, 430f)
+        txt(canvas, monthYear, 500f, c + 228f, 40f, ink, serifBold, 400f)
+        txt(canvas, d.day.dayName, 500f, c + 280f, 44f, ink, serifBold, 400f)
 
         drawBackStrip(canvas, d, stripTop, vh - 110f)
         drawFooter(canvas, vh, "Büyük Saatli Maarif Takvimi")
@@ -256,7 +280,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         }
     }
 
-    private fun drawHeader(canvas: Canvas, d: PageData) {
+    private fun drawHeader(canvas: Canvas, d: PageData, f: Front) {
         val day = d.day
 
         val hijri = threeLines(day.hijriDate, "HİCRİ")
@@ -271,7 +295,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         }
 
         for (i in 0 until 3) {
-            val y = 130f + i * 36f
+            val y = 130f + i * f.headerStep
             val size = if (i == 0) 26f else 30f
             val face = if (i == 0) serif else serifBold
             txt(canvas, hijri[i], 185f, y, size, ink, face, 260f)
@@ -281,10 +305,10 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         strokePaint.color = ink
         strokePaint.strokeWidth = 2f
-        canvas.drawLine(60f, 222f, VW - 60f, 222f, strokePaint)
+        canvas.drawLine(60f, f.sep1, VW - 60f, f.sep1, strokePaint)
         val strip = "YIL: ${d.date.year}    AY: ${d.date.monthValue}    GÜN: ${day.dayOfYear}    KALAN: ${day.daysLeftInYear}"
-        txt(canvas, strip, 500f, 256f, 30f, ink, serifBold, 880f)
-        canvas.drawLine(60f, 274f, VW - 60f, 274f, strokePaint)
+        txt(canvas, strip, 500f, f.sep1 + 34f, 30f, ink, serifBold, 880f)
+        canvas.drawLine(60f, f.sep2, VW - 60f, f.sep2, strokePaint)
     }
 
     // ---------- Arka yaprak ----------
@@ -400,18 +424,13 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
      * ile AYNI donusumu kullanir, boylece kollar kadranin ustune tam oturur.
      */
     fun drawHandsOnly(canvas: Canvas, width: Int, height: Int, data: PageData, topInset: Int = 0) {
-        val w = width.toFloat()
-        val h = height.toFloat()
-        val inset = topInset.toFloat()
-        val availH = (h - inset).coerceAtLeast(1f)
-        val s = kotlin.math.min(w / VW, availH / BASE_H)
-        val offsetX = (w - VW * s) / 2f
-        val offsetY = inset + 8f
+        val g = geo(width, height, topInset)
+        val f = Front(g.extra)
         canvas.save()
-        canvas.translate(offsetX, offsetY)
-        canvas.scale(s, s)
-        drawHands(canvas, 167f, CLOCK_Y, 58f, LocalTime.now(data.leftZone))
-        drawHands(canvas, 833f, CLOCK_Y, 58f, LocalTime.now(data.rightZone))
+        canvas.translate(g.offsetX, g.offsetY)
+        canvas.scale(g.s, g.s)
+        drawHands(canvas, 167f, f.clockY, 58f, LocalTime.now(data.leftZone))
+        drawHands(canvas, 833f, f.clockY, 58f, LocalTime.now(data.rightZone))
         canvas.restore()
     }
 
@@ -489,10 +508,10 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         canvas.drawRect(cx - 0.25f * s, cy, cx + 0.27f * s, cy + 0.22f * s, fillPaint)
     }
 
-    private fun drawPrayerBox(canvas: Canvas, left: Float, top: Float, width: Float, c: CityData) {
+    private fun drawPrayerBox(canvas: Canvas, left: Float, top: Float, width: Float, boxH: Float, c: CityData) {
         strokePaint.color = ink
         strokePaint.strokeWidth = 3f
-        canvas.drawRect(left, top, left + width, top + BOX_H, strokePaint)
+        canvas.drawRect(left, top, left + width, top + boxH, strokePaint)
 
         txt(canvas, c.cityName, left + width / 2f, top + 46f, 36f, ink, serifBold, width - 24f)
         strokePaint.strokeWidth = 2f
@@ -506,11 +525,14 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
             "Akşam" to c.aksam,
             "Yatsı" to c.yatsi
         )
+        // Satir araligi kutu yuksekligine gore acilir (396 yukseklikte tam 52, eskisiyle ayni)
+        val step = (boxH - 136f) / 5f
+        val fs = 1f + 0.35f * (boxH / BASE_BOX_H - 1f)
         var y = top + 62f + 48f
         for ((label, time) in rows) {
-            txt(canvas, label, left + 16f, y, 26f, inkSoft, serif, 110f, Paint.Align.LEFT)
-            txt(canvas, time, left + width - 16f, y, 28f, ink, serifBold, 90f, Paint.Align.RIGHT)
-            y += 52f
+            txt(canvas, label, left + 16f, y, 26f * fs, inkSoft, serif, 110f, Paint.Align.LEFT)
+            txt(canvas, time, left + width - 16f, y, 28f * fs, ink, serifBold, 90f, Paint.Align.RIGHT)
+            y += step
         }
     }
 
