@@ -170,7 +170,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val clockY = CLOCK_Y
         val boxTop = 530f
         val tempY = clockY + 96f
-        val stripTop = vh - 220f
+        val stripTop = boxTop + BOX_H + 28f
 
         drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone), withHands)
         drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone), withHands)
@@ -185,11 +185,11 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         val parts = d.day.gregorianText.trim().split(" ")
         val monthYear = if (parts.size >= 3) parts[1] + " " + parts[2] else d.day.gregorianText
-        txt(canvas, d.day.dayNumber, 500f, boxTop + 168f, 248f, ink, bigNumber, 360f)
-        txt(canvas, monthYear, 500f, boxTop + 214f, 36f, ink, serifBold, 360f)
-        txt(canvas, d.day.dayName, 500f, boxTop + 262f, 40f, ink, serifBold, 360f)
+        txt(canvas, d.day.dayNumber, 500f, boxTop + 176f, 280f, ink, bigNumber, 400f)
+        txt(canvas, monthYear, 500f, boxTop + 228f, 40f, ink, serifBold, 400f)
+        txt(canvas, d.day.dayName, 500f, boxTop + 280f, 44f, ink, serifBold, 400f)
 
-        drawBackStrip(canvas, d, stripTop, vh - 78f)
+        drawBackStrip(canvas, d, stripTop, vh - 110f)
         drawFooter(canvas, vh, "Büyük Saatli Maarif Takvimi")
     }
 
