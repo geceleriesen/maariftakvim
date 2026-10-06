@@ -171,7 +171,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val clockY = CLOCK_Y
         val boxTop = 530f
         val tempY = clockY + 96f
-        val stripTop = max(boxTop + BOX_H + 36f, vh - 430f)
+        val stripTop = boxTop + BOX_H + 36f
 
         drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone), withHands)
         drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone), withHands)

@@ -28,7 +28,7 @@ object WallpaperJob {
     const val ACTION_REFRESH = "com.geceleriesen.maariftakvim.action.REFRESH_LOCK"
 
     // Kilit ekraninin ustundeki saat ve bildirimler icin sayfanin ustunde birakilan oran
-    const val TOP_INSET_RATIO = 0.16f
+    const val TOP_INSET_RATIO = 0.30f
 
     @Suppress("DEPRECATION")
     fun isOurLiveWallpaper(context: Context): Boolean = try {
