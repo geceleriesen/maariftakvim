@@ -40,6 +40,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         private const val BASE_H = 1600f
         private const val BOX_H = 396f
         private const val CLOCK_Y = 330f
+        private const val SECOND_RED = 0xFFC62828.toInt()
     }
 
     private class Block(val title: String, val body: String, val note: String = "")
@@ -378,10 +379,14 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val hour = (now.hour % 12) + minute / 60f
         hand(canvas, cx, cy, hour * 30f, r * 0.5f, 7f)
         hand(canvas, cx, cy, minute * 6f, r * 0.76f, 4.5f)
-        hand(canvas, cx, cy, now.second * 6f, r * 0.82f, 2f)
+        // Saniye kolu kirmizi, kisa bir kuyrukla (duvar saatlerindeki gibi)
+        hand(canvas, cx, cy, now.second * 6f, r * 0.84f, 2.5f, SECOND_RED)
+        hand(canvas, cx, cy, now.second * 6f + 180f, r * 0.22f, 3.5f, SECOND_RED)
 
         fillPaint.color = ink
         canvas.drawCircle(cx, cy, 5f, fillPaint)
+        fillPaint.color = SECOND_RED
+        canvas.drawCircle(cx, cy, 2.5f, fillPaint)
     }
 
     /**
@@ -405,9 +410,9 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         canvas.restore()
     }
 
-    private fun hand(canvas: Canvas, cx: Float, cy: Float, degrees: Float, length: Float, width: Float) {
+    private fun hand(canvas: Canvas, cx: Float, cy: Float, degrees: Float, length: Float, width: Float, color: Int = ink) {
         val a = Math.toRadians(degrees.toDouble())
-        strokePaint.color = ink
+        strokePaint.color = color
         strokePaint.strokeWidth = width
         strokePaint.strokeCap = Paint.Cap.ROUND
         canvas.drawLine(cx, cy, cx + sin(a).toFloat() * length, cy - cos(a).toFloat() * length, strokePaint)
