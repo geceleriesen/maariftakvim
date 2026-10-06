@@ -62,7 +62,8 @@ object WallpaperJob {
                 }
             }
 
-            val day = CalendarRepository(app).getDay(today).copy(dayLengthInfo = first.dayLengthInfo, agenda = "")
+            val raw = CalendarRepository(app).getDay(today)
+            val day = raw.copy(dayLengthInfo = first.dayLengthInfo, agenda = if (settings.showAgenda) raw.agenda else "")
             val data = PageData(day, today, first, second, c1.zoneId(), c2.zoneId(), false)
 
             val metrics = DisplayMetrics()

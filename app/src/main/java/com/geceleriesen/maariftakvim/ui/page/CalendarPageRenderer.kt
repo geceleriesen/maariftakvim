@@ -170,7 +170,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val clockY = CLOCK_Y
         val boxTop = 530f
         val tempY = clockY + 96f
-        val stripTop = boxTop + BOX_H + 28f
+        val stripTop = max(boxTop + BOX_H + 36f, vh - 430f)
 
         drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone), withHands)
         drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone), withHands)
@@ -202,6 +202,10 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         val lines = ArrayList<String>()
         if (day.menu.isNotEmpty()) lines.add("Menü: " + day.menu)
+        if (day.agenda.isNotEmpty()) {
+            val agenda = if (day.agenda.length > 42) day.agenda.take(41).trimEnd() + "…" else day.agenda
+            lines.add("Ajanda: " + agenda)
+        }
         if (day.girlNames.isNotEmpty() || day.boyNames.isNotEmpty()) {
             lines.add("Günün ismi: Erkek: " + day.boyNames + "  Kız: " + day.girlNames)
         }
