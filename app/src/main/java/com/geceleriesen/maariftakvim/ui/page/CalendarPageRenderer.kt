@@ -80,7 +80,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val s = kotlin.math.min(w / VW, availH / BASE_H)
         val vh = BASE_H
         val offsetX = (w - VW * s) / 2f
-        val offsetY = inset + (availH - BASE_H * s) / 2f
+        val offsetY = inset + 8f
         val k = 1f
 
         canvas.save()
@@ -406,7 +406,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val availH = (h - inset).coerceAtLeast(1f)
         val s = kotlin.math.min(w / VW, availH / BASE_H)
         val offsetX = (w - VW * s) / 2f
-        val offsetY = inset + (availH - BASE_H * s) / 2f
+        val offsetY = inset + 8f
         canvas.save()
         canvas.translate(offsetX, offsetY)
         canvas.scale(s, s)
