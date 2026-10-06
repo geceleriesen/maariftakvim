@@ -38,6 +38,7 @@ class SettingsActivity : Activity() {
     private lateinit var agendaBtn: Button
     private lateinit var screenBtn: Button
     private lateinit var lockDailyBtn: Button
+    private lateinit var homeDailyBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +91,8 @@ class SettingsActivity : Activity() {
         root.addView(button("Kilit ekranına şimdi uygula") { applyLockNow() })
         lockDailyBtn = button("") { toggleLockDaily() }
         root.addView(lockDailyBtn)
+        homeDailyBtn = button("") { toggleHomeDaily() }
+        root.addView(homeDailyBtn)
 
         // --- Gizlilik ---
         root.addView(
@@ -115,6 +118,7 @@ class SettingsActivity : Activity() {
         agendaBtn.text = if (settings.showAgenda) "Ajanda: AÇIK (kapat)" else "Ajanda: KAPALI (aç)"
         screenBtn.text = if (settings.keepScreenOn) "Ekran açık kalsın: EVET (kapat)" else "Ekran açık kalsın: HAYIR (aç)"
         lockDailyBtn.text = if (settings.lockDaily) "Her gece otomatik yenile: AÇIK (kapat)" else "Her gece otomatik yenile: KAPALI (aç)"
+        homeDailyBtn.text = if (settings.homeDaily) "Ana ekrana da bas: AÇIK (kapat)" else "Ana ekrana da bas: KAPALI (aç)"
     }
 
     // ---------- Düğmeler ----------
@@ -154,7 +158,8 @@ class SettingsActivity : Activity() {
             val ok = WallpaperJob.applyNow(this)
             runOnUiThread {
                 if (ok) {
-                    toast("Kilit ekranı güncellendi. Telefonu kilitleyip bak.")
+                    val where = if (settings.homeDaily) "Kilit ve ana ekran güncellendi." else "Kilit ekranı güncellendi. Telefonu kilitleyip bak."
+                    toast(where)
                 } else {
                     toast("Kilit ekranı ayarlanamadı. Telefonun bunu engelliyor olabilir.")
                 }
@@ -165,10 +170,25 @@ class SettingsActivity : Activity() {
     private fun toggleLockDaily() {
         if (settings.lockDaily) {
             settings.lockDaily = false
+            settings.homeDaily = false
             WallpaperScheduler.cancel(this)
         } else {
             settings.lockDaily = true
             WallpaperScheduler.schedule(this)
+            applyLockNow()
+        }
+        refreshRows()
+    }
+
+    private fun toggleHomeDaily() {
+        if (settings.homeDaily) {
+            settings.homeDaily = false
+        } else {
+            settings.homeDaily = true
+            if (!settings.lockDaily) {
+                settings.lockDaily = true
+                WallpaperScheduler.schedule(this)
+            }
             applyLockNow()
         }
         refreshRows()

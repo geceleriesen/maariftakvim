@@ -58,6 +58,13 @@ class Settings(context: Context) {
             sp.edit().putBoolean("lock_daily", value).apply()
         }
 
+    /** Ayni yapragi ana ekran duvar kagidina da bas. Varsayilan kapali. */
+    var homeDaily: Boolean
+        get() = sp.getBoolean("home_daily", false)
+        set(value) {
+            sp.edit().putBoolean("home_daily", value).apply()
+        }
+
     // Konumdan bulunan yer adlari (Geocoder her seferinde sorulmasin)
     fun cachedPlace(lat: Double, lon: Double): String? = sp.getString(placeKey(lat, lon), null)
 

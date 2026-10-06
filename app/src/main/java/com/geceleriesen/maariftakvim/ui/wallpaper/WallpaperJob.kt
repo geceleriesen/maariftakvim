@@ -65,7 +65,12 @@ object WallpaperJob {
             val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             CalendarPageRenderer(FontLoader.numberFace(app)).draw(Canvas(bmp), width, height, data, (height * TOP_INSET_RATIO).toInt())
 
-            WallpaperManager.getInstance(app).setBitmap(bmp, null, true, WallpaperManager.FLAG_LOCK)
+            val which = if (settings.homeDaily) {
+                WallpaperManager.FLAG_LOCK or WallpaperManager.FLAG_SYSTEM
+            } else {
+                WallpaperManager.FLAG_LOCK
+            }
+            WallpaperManager.getInstance(app).setBitmap(bmp, null, true, which)
             bmp.recycle()
             true
         } catch (e: Exception) {
