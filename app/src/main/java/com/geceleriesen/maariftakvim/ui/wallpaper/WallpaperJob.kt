@@ -28,7 +28,14 @@ object WallpaperJob {
     const val ACTION_REFRESH = "com.geceleriesen.maariftakvim.action.REFRESH_LOCK"
 
     // Kilit ekraninin ustundeki saat ve bildirimler icin sayfanin ustunde birakilan oran
-    private const val TOP_INSET_RATIO = 0.32f
+    const val TOP_INSET_RATIO = 0.32f
+
+    @Suppress("DEPRECATION")
+    fun isOurLiveWallpaper(context: Context): Boolean = try {
+        WallpaperManager.getInstance(context).wallpaperInfo?.packageName == context.packageName
+    } catch (e: Exception) {
+        false
+    }
 
     /**
      * Bugunun takvim yapragini kilit ekrani resmi olarak ayarlar.
@@ -40,6 +47,8 @@ object WallpaperJob {
         return try {
             val app = context.applicationContext
             val settings = Settings(app)
+            // Canli duvar kagidi aciksa statik resim onu ezer; dokunma
+            if (settings.liveLock || isOurLiveWallpaper(app)) return true
             val today = LocalDate.now()
             val c1 = CityResolver.city1(app)
             val c2 = settings.city2

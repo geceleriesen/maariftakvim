@@ -3,6 +3,9 @@ package com.geceleriesen.maariftakvim.ui
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.WallpaperManager
+import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.os.Bundle
@@ -19,6 +22,7 @@ import com.geceleriesen.maariftakvim.data.LocationHelper
 import com.geceleriesen.maariftakvim.data.Settings
 import com.geceleriesen.maariftakvim.network.CityResult
 import com.geceleriesen.maariftakvim.network.CitySearch
+import com.geceleriesen.maariftakvim.ui.wallpaper.MaarifLiveWallpaper
 import com.geceleriesen.maariftakvim.ui.wallpaper.WallpaperJob
 import com.geceleriesen.maariftakvim.ui.wallpaper.WallpaperScheduler
 
@@ -39,6 +43,7 @@ class SettingsActivity : Activity() {
     private lateinit var screenBtn: Button
     private lateinit var lockDailyBtn: Button
     private lateinit var homeDailyBtn: Button
+    private lateinit var liveBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +93,17 @@ class SettingsActivity : Activity() {
                 13f, false, 4
             )
         )
-        root.addView(button("Kilit ekranına şimdi uygula") { applyLockNow() })
+        root.addView(
+            textView(
+                "Canlı kilit ekranı: analog saatin akrep ve yelkovanı gerçekten çalışır. " +
+                    "Açınca telefonun duvar kağıdı ekranı açılır; orada kilit ekranına uygula'yı seç. " +
+                    "Bu mod açıkken gece yenilemesi (statik resim) devre dışı kalır.",
+                13f, false, 4
+            )
+        )
+        liveBtn = button("") { toggleLive() }
+        root.addView(liveBtn)
+        root.addView(button("Kilit ekranına şimdi uygula (statik)") { applyLockNow() })
         lockDailyBtn = button("") { toggleLockDaily() }
         root.addView(lockDailyBtn)
         homeDailyBtn = button("") { toggleHomeDaily() }
@@ -118,6 +133,7 @@ class SettingsActivity : Activity() {
         agendaBtn.text = if (settings.showAgenda) "Ajanda: AÇIK (kapat)" else "Ajanda: KAPALI (aç)"
         screenBtn.text = if (settings.keepScreenOn) "Ekran açık kalsın: EVET (kapat)" else "Ekran açık kalsın: HAYIR (aç)"
         lockDailyBtn.text = if (settings.lockDaily) "Her gece otomatik yenile: AÇIK (kapat)" else "Her gece otomatik yenile: KAPALI (aç)"
+        liveBtn.text = if (settings.liveLock) "Canlı kilit ekranı: AÇIK (kapat)" else "Canlı kilit ekranı: KAPALI (aç)"
         homeDailyBtn.text = if (settings.homeDaily) "Ana ekrana da bas: AÇIK (kapat)" else "Ana ekrana da bas: KAPALI (aç)"
     }
 
@@ -153,6 +169,10 @@ class SettingsActivity : Activity() {
     }
 
     private fun applyLockNow() {
+        if (settings.liveLock) {
+            toast("Canlı kilit ekranı açık, statik resim onu ezmesin diye atlandı. Önce canlı modu kapat.")
+            return
+        }
         toast("Kilit ekranı resmi hazırlanıyor, birkaç saniye sürebilir…")
         Thread {
             val ok = WallpaperJob.applyNow(this)
@@ -165,6 +185,33 @@ class SettingsActivity : Activity() {
                 }
             }
         }.start()
+    }
+
+    private fun toggleLive() {
+        if (settings.liveLock) {
+            settings.liveLock = false
+            toast("Canlı kilit ekranı kapandı. Telefonun duvar kağıdından başka bir resim seçebilir ya da statik yenilemeyi kullanabilirsin.")
+            refreshRows()
+            return
+        }
+        try {
+            val i = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+            i.putExtra(
+                WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                ComponentName(this, MaarifLiveWallpaper::class.java)
+            )
+            startActivity(i)
+            settings.liveLock = true
+        } catch (e: Exception) {
+            try {
+                startActivity(Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
+                settings.liveLock = true
+                toast("Listeden Büyük Saatli Maarif Takvimi'ni seç.")
+            } catch (e2: Exception) {
+                toast("Telefon canlı duvar kağıdı ekranını açamadı.")
+            }
+        }
+        refreshRows()
     }
 
     private fun toggleLockDaily() {

@@ -65,6 +65,13 @@ class Settings(context: Context) {
             sp.edit().putBoolean("home_daily", value).apply()
         }
 
+    /** Kilit ekrani canli duvar kagidi (analog saat calisir). Aciksa statik gece yenilemesi atlanir. */
+    var liveLock: Boolean
+        get() = sp.getBoolean("live_lock", false)
+        set(value) {
+            sp.edit().putBoolean("live_lock", value).apply()
+        }
+
     // Konumdan bulunan yer adlari (Geocoder her seferinde sorulmasin)
     fun cachedPlace(lat: Double, lon: Double): String? = sp.getString(placeKey(lat, lon), null)
 

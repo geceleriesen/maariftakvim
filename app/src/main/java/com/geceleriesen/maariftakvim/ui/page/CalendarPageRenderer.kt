@@ -39,6 +39,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         private const val VW = 1000f
         private const val BASE_H = 1600f
         private const val BOX_H = 396f
+        private const val CLOCK_Y = 330f
     }
 
     private class Block(val title: String, val body: String, val note: String = "")
@@ -65,7 +66,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
      * topInset: sayfanin ustunde birakilacak piksel (kilit ekraninda saat/bildirim icin).
      * Kagit zemin tum ekrani kaplar, sayfa icerigi bu boslugun altina cizilir.
      */
-    fun draw(canvas: Canvas, width: Int, height: Int, data: PageData, topInset: Int = 0) {
+    fun draw(canvas: Canvas, width: Int, height: Int, data: PageData, topInset: Int = 0, withHands: Boolean = true) {
         val w = width.toFloat()
         val h = height.toFloat()
 
@@ -88,7 +89,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         if (data.showBack) {
             drawBack(canvas, data, vh)
         } else {
-            drawFront(canvas, data, vh, k)
+            drawFront(canvas, data, vh, k, withHands)
         }
 
         canvas.restore()
@@ -162,16 +163,16 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
     // ---------- Ön yüz ----------
 
-    private fun drawFront(canvas: Canvas, d: PageData, vh: Float, k: Float) {
+    private fun drawFront(canvas: Canvas, d: PageData, vh: Float, k: Float, withHands: Boolean) {
         drawHeader(canvas, d)
 
-        val clockY = 330f
+        val clockY = CLOCK_Y
         val boxTop = 455f
         val tempY = clockY + 96f
         val stripTop = vh - 300f
 
-        drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone))
-        drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone))
+        drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone), withHands)
+        drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone), withHands)
 
         drawWeatherIcon(canvas, 104f, tempY - 10f, 36f, d.left.weatherCode)
         txt(canvas, d.left.temp, 184f, tempY, 28f, ink, serifBold, 100f)
@@ -352,7 +353,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
     // ---------- Saat, hava ikonu, vakit kutulari ----------
 
-    private fun drawClock(canvas: Canvas, cx: Float, cy: Float, r: Float, now: LocalTime) {
+    private fun drawClock(canvas: Canvas, cx: Float, cy: Float, r: Float, now: LocalTime, withHands: Boolean = true) {
         fillPaint.color = 0x33FFFFFF
         canvas.drawCircle(cx, cy, r, fillPaint)
 
@@ -369,6 +370,10 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
             canvas.drawLine(cx + sx * inner, cy - cs * inner, cx + sx * r * 0.94f, cy - cs * r * 0.94f, strokePaint)
         }
 
+        if (withHands) drawHands(canvas, cx, cy, r, now)
+    }
+
+    private fun drawHands(canvas: Canvas, cx: Float, cy: Float, r: Float, now: LocalTime) {
         val minute = now.minute + now.second / 60f
         val hour = (now.hour % 12) + minute / 60f
         hand(canvas, cx, cy, hour * 30f, r * 0.5f, 7f)
@@ -377,6 +382,27 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
 
         fillPaint.color = ink
         canvas.drawCircle(cx, cy, 5f, fillPaint)
+    }
+
+    /**
+     * Canli duvar kagidi icin: yaprak (kollar haric) bir kez bitmap'e cizilir, her saniye
+     * bitmap'in ustune yalniz akrep/yelkovan/saniye kolu cizilir. draw(..., withHands=false)
+     * ile AYNI donusumu kullanir, boylece kollar kadranin ustune tam oturur.
+     */
+    fun drawHandsOnly(canvas: Canvas, width: Int, height: Int, data: PageData, topInset: Int = 0) {
+        val w = width.toFloat()
+        val h = height.toFloat()
+        val inset = topInset.toFloat()
+        val s = kotlin.math.min(w / VW, (h - inset) / BASE_H)
+        val offsetX = (w / s - VW) / 2f
+
+        canvas.save()
+        canvas.translate(0f, inset)
+        canvas.scale(s, s)
+        canvas.translate(offsetX, 0f)
+        drawHands(canvas, 167f, CLOCK_Y, 58f, LocalTime.now(data.leftZone))
+        drawHands(canvas, 833f, CLOCK_Y, 58f, LocalTime.now(data.rightZone))
+        canvas.restore()
     }
 
     private fun hand(canvas: Canvas, cx: Float, cy: Float, degrees: Float, length: Float, width: Float) {
