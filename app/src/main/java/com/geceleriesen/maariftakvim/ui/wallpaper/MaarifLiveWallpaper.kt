@@ -1,11 +1,16 @@
 package com.geceleriesen.maariftakvim.ui.wallpaper
 
 import android.app.Activity
+import android.app.KeyguardManager
 import android.app.WallpaperManager
+import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.service.wallpaper.WallpaperService
@@ -49,6 +54,21 @@ class MaarifLiveWallpaper : WallpaperService() {
         @Volatile
         private var loading = false
 
+        // Ana ekran resmi: telefon kilitli DEGILKEN bu resim, kilitliyken takvim gorunur
+        private val keyguard = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
+        private var homeBase: Bitmap? = null
+        private var homeVer = 0L
+        private var showingHome = false
+
+        private val lockStateReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (visible) {
+                    handler.removeCallbacks(tick)
+                    handler.post(tick)
+                }
+            }
+        }
+
         private val tick = object : Runnable {
             override fun run() {
                 if (!visible) return
@@ -60,16 +80,29 @@ class MaarifLiveWallpaper : WallpaperService() {
             }
         }
 
+        override fun onCreate(surfaceHolder: SurfaceHolder) {
+            super.onCreate(surfaceHolder)
+            val f = IntentFilter(Intent.ACTION_USER_PRESENT)
+            f.addAction(Intent.ACTION_SCREEN_OFF)
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(lockStateReceiver, f, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(lockStateReceiver, f)
+            }
+        }
+
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
             w = width
             h = height
             dropBase()
+            dropHome()
             if (visible) drawFrame()
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
             this.visible = visible
+            showingHome = false // gorunur olunca ilk kareyi mutlaka yeniden ciz
             handler.removeCallbacks(tick)
             if (visible) handler.post(tick)
         }
@@ -84,7 +117,13 @@ class MaarifLiveWallpaper : WallpaperService() {
             visible = false
             handler.removeCallbacks(tick)
             worker.shutdownNow()
+            try {
+                unregisterReceiver(lockStateReceiver)
+            } catch (e: Exception) {
+                // kayitli degilse sorun degil
+            }
             dropBase()
+            dropHome()
             super.onDestroy()
         }
 
@@ -93,15 +132,41 @@ class MaarifLiveWallpaper : WallpaperService() {
             base = null
         }
 
+        private fun dropHome() {
+            homeBase?.recycle()
+            homeBase = null
+            showingHome = false
+        }
+
         private fun inset(): Int = (h * WallpaperJob.TOP_INSET_RATIO).toInt()
 
         private fun drawFrame() {
             if (w <= 0 || h <= 0) return
+
+            // Kullanici ana ekran resmi sectiyse ve telefon kilitli degilse o resmi goster
+            val ver = Settings(applicationContext).homeImageVersion
+            if (ver != homeVer) {
+                dropHome()
+                homeVer = ver
+            }
+            var homeBmp: Bitmap? = null
+            if (ver != 0L && !keyguard.isKeyguardLocked) {
+                if (showingHome) return // degisen bir sey yok, bos yere cizme
+                homeBmp = homeBase ?: HomeImage.load(applicationContext, w, h)
+                homeBase = homeBmp
+            }
+
             val holder = surfaceHolder
             var c: Canvas? = null
             try {
                 c = holder.lockCanvas()
                 if (c == null) return
+                if (homeBmp != null) {
+                    c.drawBitmap(homeBmp, 0f, 0f, null)
+                    showingHome = true
+                    return
+                }
+                showingHome = false
                 val d = data
                 if (d == null) {
                     c.drawColor(PAPER)

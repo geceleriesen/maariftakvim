@@ -72,6 +72,13 @@ class Settings(context: Context) {
             sp.edit().putBoolean("live_lock", value).apply()
         }
 
+    /** Canli modda telefon kilitli degilken gosterilecek resmin surumu (0 = resim yok). */
+    var homeImageVersion: Long
+        get() = sp.getLong("home_image_ver", 0L)
+        set(value) {
+            sp.edit().putLong("home_image_ver", value).apply()
+        }
+
     // Konumdan bulunan yer adlari (Geocoder her seferinde sorulmasin)
     fun cachedPlace(lat: Double, lon: Double): String? = sp.getString(placeKey(lat, lon), null)
 

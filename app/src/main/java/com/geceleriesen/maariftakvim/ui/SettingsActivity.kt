@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.app.WallpaperManager
 import android.content.ComponentName
 import android.content.Intent
+import android.net.Uri
 import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.os.Bundle
@@ -22,6 +23,7 @@ import com.geceleriesen.maariftakvim.data.LocationHelper
 import com.geceleriesen.maariftakvim.data.Settings
 import com.geceleriesen.maariftakvim.network.CityResult
 import com.geceleriesen.maariftakvim.network.CitySearch
+import com.geceleriesen.maariftakvim.ui.wallpaper.HomeImage
 import com.geceleriesen.maariftakvim.ui.wallpaper.LiveWallpaperLauncher
 import com.geceleriesen.maariftakvim.ui.wallpaper.WallpaperJob
 import com.geceleriesen.maariftakvim.ui.wallpaper.WallpaperScheduler
@@ -31,6 +33,7 @@ class SettingsActivity : Activity() {
     companion object {
         private const val REQ_LOCATION = 11
         private const val REQ_CALENDAR = 12
+        private const val REQ_IMAGE = 13
     }
 
     private val ink = 0xFF2B2118.toInt()
@@ -44,6 +47,8 @@ class SettingsActivity : Activity() {
     private lateinit var lockDailyBtn: Button
     private lateinit var homeDailyBtn: Button
     private lateinit var liveBtn: Button
+    private lateinit var homeImgBtn: Button
+    private lateinit var homeImgClearBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +108,22 @@ class SettingsActivity : Activity() {
         )
         liveBtn = button("") { toggleLive() }
         root.addView(liveBtn)
+        root.addView(
+            textView(
+                "Bazı telefonlarda (Poco gibi) canlı duvar kağıdı hem kilit hem ana ekrana gider. " +
+                    "Buradan bir resim seçersen telefon kilitliyken takvim, kilit açıkken senin resmin görünür. " +
+                    "Telefonun kendi duvar kağıdı ayarlarına dokunulmaz.",
+                13f, false, 4
+            )
+        )
+        homeImgBtn = button("") { pickHomeImage() }
+        root.addView(homeImgBtn)
+        homeImgClearBtn = button("Ana ekran resmini kaldır") {
+            HomeImage.clear(this)
+            toast("Ana ekranda da takvim görünecek.")
+            refreshRows()
+        }
+        root.addView(homeImgClearBtn)
         root.addView(button("Kilit ekranına şimdi uygula (statik)") { applyLockNow() })
         lockDailyBtn = button("") { toggleLockDaily() }
         root.addView(lockDailyBtn)
@@ -133,6 +154,9 @@ class SettingsActivity : Activity() {
         agendaBtn.text = if (settings.showAgenda) "Ajanda: AÇIK (kapat)" else "Ajanda: KAPALI (aç)"
         screenBtn.text = if (settings.keepScreenOn) "Ekran açık kalsın: EVET (kapat)" else "Ekran açık kalsın: HAYIR (aç)"
         lockDailyBtn.text = if (settings.lockDaily) "Her gece otomatik yenile: AÇIK (kapat)" else "Her gece otomatik yenile: KAPALI (aç)"
+        val hasImg = settings.homeImageVersion != 0L
+        homeImgBtn.text = if (hasImg) "Ana ekran resmi: SEÇİLDİ (değiştir)" else "Ana ekran resmi: YOK (seç)"
+        homeImgClearBtn.isEnabled = hasImg
         liveBtn.text = if (settings.liveLock) "Canlı kilit ekranı: AÇIK (kapat)" else "Canlı kilit ekranı: KAPALI (aç)"
         homeDailyBtn.text = if (settings.homeDaily) "Ana ekrana da bas: AÇIK (kapat)" else "Ana ekrana da bas: KAPALI (aç)"
     }
@@ -185,6 +209,32 @@ class SettingsActivity : Activity() {
                 }
             }
         }.start()
+    }
+
+    private fun pickHomeImage() {
+        val i = Intent(Intent.ACTION_GET_CONTENT)
+        i.type = "image/*"
+        i.addCategory(Intent.CATEGORY_OPENABLE)
+        try {
+            startActivityForResult(Intent.createChooser(i, "Ana ekran resmi"), REQ_IMAGE)
+        } catch (e: Exception) {
+            toast("Telefon resim seçme ekranını açamadı.")
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri: Uri? = data?.data
+        if (requestCode == REQ_IMAGE && resultCode == RESULT_OK && uri != null) {
+            toast("Resim hazırlanıyor…")
+            Thread {
+                val ok = HomeImage.save(this, uri)
+                runOnUiThread {
+                    toast(if (ok) "Ana ekran resmi ayarlandı. Telefonu kilitleyip açınca görünür." else "Resim okunamadı, başka bir tane dene.")
+                    refreshRows()
+                }
+            }.start()
+        }
     }
 
     private fun toggleLive() {
