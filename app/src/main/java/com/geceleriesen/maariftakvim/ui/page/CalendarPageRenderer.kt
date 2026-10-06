@@ -40,7 +40,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         private const val BASE_H = 1600f
         // Ekran 1600 birimden uzunsa fazla yukseklik (extra) on yuze dagitilir; arka sayfa
         // seridi sabit yukseklikte kalir ve alta yaslanir. Cok uzun ekranlarda tavan:
-        private const val MAX_EXTRA = 360f
+        private const val MAX_EXTRA = 640f
         private const val BASE_BOX_H = 396f
         private const val BASE_BOX_TOP = 530f
         private const val STRIP_H = 528f   // "ARKA YAPRAK" seridinin sabit yuksekligi
@@ -218,6 +218,8 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         drawFooter(canvas, vh, "Büyük Saatli Maarif Takvimi")
     }
 
+    private class StripLine(val text: String, val bold: Boolean = false, val gap: Float = 16f)
+
     private fun drawBackStrip(canvas: Canvas, d: PageData, top: Float, bottom: Float) {
         val day = d.day
         strokePaint.color = ink
@@ -225,26 +227,31 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         canvas.drawLine(60f, top, VW - 60f, top, strokePaint)
         txt(canvas, "ARKA YAPRAK", 500f, top + 42f, 34f, ink, serifBold, 520f)
 
-        val lines = ArrayList<String>()
-        if (day.menu.isNotEmpty()) lines.add("Menü: " + day.menu)
+        val lines = ArrayList<StripLine>()
+        if (day.menu.isNotEmpty()) lines.add(StripLine("Menü: " + day.menu))
         if (day.agenda.isNotEmpty()) {
             val agenda = if (day.agenda.length > 42) day.agenda.take(41).trimEnd() + "…" else day.agenda
-            lines.add("Ajanda: " + agenda)
+            lines.add(StripLine("Ajanda: " + agenda))
         }
         if (day.girlNames.isNotEmpty() || day.boyNames.isNotEmpty()) {
-            lines.add("Günün ismi: Erkek: " + day.boyNames + "  Kız: " + day.girlNames)
+            // Baslik ayri satir, Erkek ve Kiz alt alta
+            lines.add(StripLine("Günün ismi", bold = true, gap = 4f))
+            if (day.boyNames.isNotEmpty()) {
+                lines.add(StripLine("Erkek: " + day.boyNames, gap = if (day.girlNames.isNotEmpty()) 4f else 16f))
+            }
+            if (day.girlNames.isNotEmpty()) lines.add(StripLine("Kız: " + day.girlNames))
         }
-        if (day.riddle.isNotEmpty()) lines.add("Bilmece: " + day.riddle)
-        if (day.riddleAnswer.isNotEmpty()) lines.add("Cevap: " + day.riddleAnswer)
-        if (day.joke.isNotEmpty()) lines.add("Fıkra: " + day.joke)
-        if (day.historyEvent.isNotEmpty()) lines.add("Tarih: " + day.historyEvent)
+        if (day.riddle.isNotEmpty()) lines.add(StripLine("Bilmece: " + day.riddle))
+        if (day.riddleAnswer.isNotEmpty()) lines.add(StripLine("Cevap: " + day.riddleAnswer))
+        if (day.joke.isNotEmpty()) lines.add(StripLine("Fıkra: " + day.joke))
+        if (day.historyEvent.isNotEmpty()) lines.add(StripLine("Tarih: " + day.historyEvent))
 
         var y = top + 78f
         for (line in lines) {
             if (y + 44f > bottom) break
-            val l = layoutOf(line, 36f, ink, serif, 880f)
+            val l = layoutOf(line.text, 36f, ink, if (line.bold) serifBold else serif, 880f)
             drawLayout(canvas, l, 500f, y, 880f)
-            y += l.height + 16f
+            y += l.height + line.gap
         }
     }
 
