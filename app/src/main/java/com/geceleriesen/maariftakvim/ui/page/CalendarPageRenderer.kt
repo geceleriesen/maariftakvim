@@ -39,7 +39,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         private const val VW = 1000f
         private const val BASE_H = 1600f
         private const val BOX_H = 396f
-        private const val CLOCK_Y = 330f
+        private const val CLOCK_Y = 378f
         private const val SECOND_RED = 0xFFC62828.toInt()
     }
 
@@ -168,9 +168,9 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         drawHeader(canvas, d)
 
         val clockY = CLOCK_Y
-        val boxTop = 455f
+        val boxTop = 530f
         val tempY = clockY + 96f
-        val stripTop = 980f
+        val stripTop = vh - 220f
 
         drawClock(canvas, 167f, clockY, 58f, LocalTime.now(d.leftZone), withHands)
         drawClock(canvas, 833f, clockY, 58f, LocalTime.now(d.rightZone), withHands)
