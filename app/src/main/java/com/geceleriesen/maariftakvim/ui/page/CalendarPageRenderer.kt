@@ -76,15 +76,16 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val inset = topInset.toFloat()
         // Sayfa genislige gore olceklenir; ekran kisa/genis ise (tablet, katlanir telefon)
         // yukseklige gore kucultulup ortalanir, boylece icerik asla tasmaz.
-        val s = kotlin.math.min(w / VW, (h - inset) / BASE_H)
-        val vh = (h - inset) / s
-        val offsetX = (w / s - VW) / 2f
-        val k = max(1f, vh / BASE_H)
+        val availH = (h - inset).coerceAtLeast(1f)
+        val s = kotlin.math.min(w / VW, availH / BASE_H)
+        val vh = BASE_H
+        val offsetX = (w - VW * s) / 2f
+        val offsetY = inset + (availH - BASE_H * s) / 2f
+        val k = 1f
 
         canvas.save()
-        canvas.translate(0f, inset)
+        canvas.translate(offsetX, offsetY)
         canvas.scale(s, s)
-        canvas.translate(offsetX, 0f)
 
         drawFrame(canvas, vh)
         if (data.showBack) {
@@ -402,12 +403,12 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val w = width.toFloat()
         val h = height.toFloat()
         val inset = topInset.toFloat()
-        val s = kotlin.math.min(w / VW, (h - inset) / BASE_H)
+        val availH = (h - inset).coerceAtLeast(1f)
+        val s = kotlin.math.min(w / VW, availH / BASE_H)
         val offsetX = (w / s - VW)
         canvas.save()
-        canvas.translate(0f, inset)
+        canvas.translate(offsetX, offsetY)
         canvas.scale(s, s)
-        canvas.translate(offsetX, 0f)
         drawHands(canvas, 167f, CLOCK_Y, 58f, LocalTime.now(data.leftZone))
         drawHands(canvas, 833f, CLOCK_Y, 58f, LocalTime.now(data.rightZone))
         canvas.restore()
