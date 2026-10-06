@@ -75,7 +75,11 @@ class MaarifLiveWallpaper : WallpaperService() {
                 if (!visible) return
                 val now = System.currentTimeMillis()
                 val d = data
-                if (d == null || d.date != LocalDate.now() || now - lastNetAt >= REFRESH_MS) loadData()
+                val ver = Settings(applicationContext).contentVersion
+                if (d == null || d.date != LocalDate.now() || ver != lastContentVer || now - lastNetAt >= REFRESH_MS) {
+                    lastContentVer = ver
+                    loadData()
+                }
                 drawFrame()
                 handler.postDelayed(this, 1000L - (now % 1000L))
             }
