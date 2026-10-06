@@ -203,7 +203,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val lines = ArrayList<String>()
         if (day.menu.isNotEmpty()) lines.add("Menü: " + day.menu)
         if (day.girlNames.isNotEmpty() || day.boyNames.isNotEmpty()) {
-            lines.add("Doğanlar: " + day.girlNames + " / " + day.boyNames)
+            lines.add("Günün ismi: Erkek: " + day.boyNames + "  Kız: " + day.girlNames)
         }
         if (day.riddle.isNotEmpty()) lines.add("Bilmece: " + day.riddle)
         if (day.riddleAnswer.isNotEmpty()) lines.add("Cevap: " + day.riddleAnswer)
@@ -291,7 +291,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val blocks = ArrayList<Block>()
         if (day.menu.isNotEmpty()) blocks.add(Block("GÜNÜN MENÜSÜ", day.menu))
         if (day.girlNames.isNotEmpty() || day.boyNames.isNotEmpty()) {
-            blocks.add(Block("BU GÜN DOĞANLARA", "Kız: ${day.girlNames}\nErkek: ${day.boyNames}"))
+            blocks.add(Block("GÜNÜN İSMİ", "Erkek: ${day.boyNames}\nKız: ${day.girlNames}"))
         }
         if (day.riddle.isNotEmpty()) {
             blocks.add(Block("GÜNÜN BİLMECESİ", day.riddle, "Cevap: ${day.riddleAnswer}"))
