@@ -373,6 +373,7 @@ class CalendarPageRenderer(numberFace: Typeface? = null) {
         val hour = (now.hour % 12) + minute / 60f
         hand(canvas, cx, cy, hour * 30f, r * 0.5f, 7f)
         hand(canvas, cx, cy, minute * 6f, r * 0.76f, 4.5f)
+        hand(canvas, cx, cy, now.second * 6f, r * 0.82f, 2f)
 
         fillPaint.color = ink
         canvas.drawCircle(cx, cy, 5f, fillPaint)

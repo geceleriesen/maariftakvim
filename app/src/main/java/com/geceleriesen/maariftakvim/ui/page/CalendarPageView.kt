@@ -19,9 +19,9 @@ class CalendarPageView(context: Context) : View(context) {
         super.onDraw(canvas)
         val d = data ?: return
         renderer.draw(canvas, width, height, d)
-        // Analog saatler icin 30 sn'de bir yeniden ciz
+        // Akrep, yelkovan ve saniye kolu her saniye yeniden cizilir
         removeCallbacks(tick)
-        postDelayed(tick, 30_000L)
+        postDelayed(tick, 1_000L)
     }
 
     override fun onDetachedFromWindow() {
