@@ -37,5 +37,5 @@ kullanılır.
 
 ## Bilinen sınırlar
 - Widget (Glance) özel font ve doku desteklemez; yeni tasarıma uyarlanması planlanıyor.
-- Kilit ekranı resmi Xiaomi/Poco gibi markalarda tema sistemi tarafından ezilebilir.
+- Kilit ekranı resmi bazı telefon markalarında tema sistemi tarafından ezilebilir.
 - Hicri tarih Umm al-Qura'dan gelir, Diyanet takvimiyle bir gün farklı olabilir.
