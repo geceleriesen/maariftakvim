@@ -12,7 +12,7 @@ kullanılır.
 | `data` | `CalendarRepository` (günün tüm içeriğini birleştirir), `Settings`, `AgendaRepository`, `LocationHelper` ve `CityResolver`. |
 | `network` | `WeatherPrayerService` (Aladhan + Open-Meteo, aylık disk önbelleği), `CitySearch` (şehir arama). |
 | `ui/page` | `CalendarPageRenderer` (Canvas ile yaprağı çizer), `CalendarPageView`, `FontLoader`. |
-| `ui` | `MainActivity` (tam ekran, dokununca yaprak çevirir), `SettingsActivity`. |
+| `ui` | `MainActivity` (tam ekran, çift dokununca yaprak çevirir, uzun basınca ayarlar), `SettingsActivity`. |
 | `ui/wallpaper` | Kilit ekranı resmi üretme (`WallpaperJob`), gece alarmı ve açılış alıcısı. |
 | `ui/widget` | Jetpack Glance ana ekran widget'ı. |
 
@@ -22,8 +22,11 @@ kullanılır.
 2. `WeatherPrayerService` şehir başına hava durumunu ve ayın namaz vakitlerini getirir. Aylık
    vakitler `filesDir` altında saklanır, böylece internetsiz de çalışır.
 3. `CalendarPageRenderer` bu verilerle yaprağı çizer. Çizim 1000 birim genişlikli sanal bir
-   koordinat sisteminde yapılır ve ekran oranına göre ölçeklenir: ekran yüksekse içerik dikey
-   ortalanır, kısa/geniş ekranlarda yüksekliğe göre küçülüp yatayda ortalanır.
+   koordinat sisteminde yapılır ve ekran oranına göre ölçeklenir. Ekran uzunsa (20:9 gibi)
+   sanal yükseklik 1600'ün üstüne çıkar ve fazlalık ön yüzde başlığa, saatlere ve vakit
+   kutularına dağıtılır; arka yaprak şeridi sabit boyutta alta yaslanır. Kısa/geniş ekranlarda
+   yüksekliğe göre küçülüp yatayda ortalanır. Kilit ekranında üstte sistem saati için ekran
+   yüksekliğinin %20'si boş bırakılır (`WallpaperJob.TOP_INSET_RATIO`).
 
 ## Testler ve CI
 - Birim testler `domain` katmanını kapsar (`app/src/test`).
