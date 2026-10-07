@@ -30,6 +30,14 @@ Her gün yeni bir yaprak: bugünün tarihi, iki şehrin saati, havası ve namaz 
 
 > 🚧 **İlk sürüm.** Şimdilik tek bir telefon modelinde denendi. Senin telefonunda farklı davranırsa, özellikle kilit ekranında, [buradan haber ver](https://github.com/geceleriesen/maariftakvim/issues). 🙏
 
+## 👋 Kim yaptı, neden?
+
+Ben yazılımcı değilim. Sadece eski bir geleneği, her sabah bir yaprak koparıp günün tarihine, saatine ve vaktine bakmayı yaşatmak istedim. 🍂
+
+Uygulamayı yapay zekâ (Claude) yardımıyla adım adım geliştirdim. Bu yüzden eksikleri ve hataları olabilir, hepsi iyi niyetle. Anlayışın ve fikirlerin için şimdiden teşekkürler. 🙏
+
+💡 Aklında bir fikir ya da karşılaştığın bir sorun varsa [buradan yaz](https://github.com/geceleriesen/maariftakvim/issues). Yazılımcı olmana gerek yok, "şurada şöyle oldu" demen yeter. 🙂
+
 ## ⬇️ İndir ve kur
 
 **👉 [MaarifTakvimi.apk dosyasını indir](https://github.com/geceleriesen/maariftakvim/releases/latest/download/MaarifTakvimi.apk)**
@@ -94,14 +102,6 @@ Hayır. iOS uygulamaların kilit ekranına canlı çizim yapmasına izin vermiyo
 - GitHub Actions her `push`'ta derler, testleri çalıştırır ve APK'yı **Releases** altına koyar.
 - Kod yapısı için [ARCHITECTURE.md](ARCHITECTURE.md).
 - Günlük içerik (menü, isim, bilmece, fıkra) bu depodaki kendi yazılmış metinlerdir. `assets/data.json`'a eklenen metinlerin telif durumunu kontrol et, başkasının telifli metnini ekleme.
-
-## 🗺️ Sırada ne var?
-
-- 🧩 Widget'ı yeni tasarıma uyarlamak
-- 🔄 Kilit ekranında ön ve arka yüzün sırayla gösterilmesi
-- 📱 Farklı telefon markalarında deneme ve uyumluluk notları
-- 🔏 Sabit imzalı sürüm (güncellemelerde eskisini silmek gerekmesin)
-- 📚 Daha fazla günlük içerik
 
 ## 📜 Lisans
 
