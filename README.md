@@ -1,123 +1,82 @@
-# Büyük Saatli Maarif Takvimi
+# 🕰️ Büyük Saatli Maarif Takvimi
 
 [![Derleme](https://github.com/geceleriesen/maariftakvim/actions/workflows/build.yml/badge.svg)](https://github.com/geceleriesen/maariftakvim/actions/workflows/build.yml)
 [![Lisans: PolyForm Noncommercial](https://img.shields.io/badge/lisans-PolyForm%20Noncommercial%201.0.0-blue)](LICENSE)
 ![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3DDC84)
 
-Eskiden evlerde duvarda asılı duran büyük saatli maarif takviminin Android uygulaması.
-Saman kâğıdı tonlarında bir yaprak: Miladi, Hicri ve Rumi tarih, iki şehrin saati, havası ve
-namaz vakitleri, halk takvimi notları ve yaprağın arkasında günün menüsü, isimleri, bilmecesi.
+Eskiden evlerde duvarda asılı duran **büyük saatli maarif takvimi**, şimdi telefonunda. 📅
+Saman kâğıdı tonlarında bir yaprak: tarih, iki şehrin saati ve namaz vakitleri, arkasında da günün menüsü, isimleri, bilmecesi ya da fıkrası. Kilit ekranına koyabilirsin, saatler gerçekten çalışır. ⏰
 
-> **Durum:** Aktif geliştirme aşamasında. Kod derleniyor ve birim testleri geçiyor. Gerçek
-> cihazda yalnızca Poco (HyperOS) üzerinde denendi; diğer markalarda, özellikle kilit ekranı
-> davranışı değişebilir.
+> 🚧 **İlk sürüm.** Şimdilik yalnızca bir Poco telefonda (HyperOS) denendi. Başka markalarda, özellikle kilit ekranında, farklılıklar olabilir. Sorun görürsen [buradan yaz](https://github.com/geceleriesen/maariftakvim/issues).
 
-## Kurulum (Android)
+## ⬇️ İndir
 
-1. Telefonda şu bağlantıyı aç ve indir:
-   **https://github.com/geceleriesen/maariftakvim/releases/latest/download/MaarifTakvimi.apk**
-2. İndirilen dosyaya dokun. "Bilinmeyen kaynaklardan yükleme" izni isterse **İzin ver**'e bas.
-   Google "zararlı olabilir" uyarısı verirse **Yine de yükle**'yi seç: uygulama Play Store'da değil,
-   imzalı bir sürüm de henüz yok, bu yüzden uyarı normal.
-3. Uygulamayı aç. İlk açılışta **Kilit ekranına koy**'a bas, açılan ekranda **Uygula**'ya basıp
-   **kilit ekranını** seç (Poco'da seçenek "Ana ekran ve kilit ekranı" olarak çıkar). Analog saatler
-   kilit ekranında gerçekten çalışır.
-4. Şehirleri değiştirmek için takvim ekranında **uzun bas** → Ayarlar.
+**[MaarifTakvimi.apk dosyasını indir](https://github.com/geceleriesen/maariftakvim/releases/latest/download/MaarifTakvimi.apk)**
 
-Poco/Xiaomi'de saat takılırsa: Ayarlar → Uygulamalar → Maarif Takvimi → **Pil tasarrufu: Kısıtlama yok**
-ve **Otomatik başlat** açık olsun.
+## 📲 Kurulum
 
-## Neler var
+1. APK'yı telefonda indir ve üzerine dokun.
+2. "Bilinmeyen kaynaklardan yükleme" izni isterse **İzin ver**'e bas. Google "zararlı olabilir" derse **Yine de yükle**'yi seç. Uygulama Play Store'da olmadığı için bu uyarı normal. 🙂
+3. Uygulamayı aç, **Kilit ekranına koy**'a bas. Açılan ekranda **Uygula**'ya basıp kilit ekranını seç.
+4. Şehirlerini değiştirmek için takvimde **uzun bas** → Ayarlar.
 
-**Takvim sayfası (tam ekran)**
-- Ekrana uyumlu yerleşim: kare ekranlarda sabit oranı korur, 20:9 gibi uzun ekranlarda
-  artan yüksekliği başlığa, saatlere ve namaz vakti kutularına dağıtır. Arka yaprak şeridi
-  sabit boyutta, alta yaslı kalır.
-- Miladi, Hicri ve Rumi tarih. Hicri tarih Umm al-Qura takviminden hesaplanır ve Diyanet
-  takviminden bir gün sapabilir.
-- İki şehir: ad yazarak aranır. İstenirse 1. şehir telefonun konumundan otomatik belirlenir.
-- Her şehir için canlı analog saat (şehrin saat diliminde), hava durumu ve ikon.
-- Namaz vakitleri (İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı) ve gün uzunluğunun
-  uzama/kısalma miktarı.
-- Halk takvimi notu, vecize ve "tarihte bugün" satırı (`assets/data.json`).
-- İsteğe bağlı ajanda satırı: telefon takvimindeki bugünün sıradaki etkinliği.
+## ✨ Neler var
 
-**Arka yaprak** (ekrana **çift dokununca** yaprak çevrilir)
-- Günün menüsü, bugün doğanlara isim önerileri (Erkek / Kız ayrı satırlarda), günün bilmecesi
-  (cevabıyla) ya da fıkrası, tarihte bugün.
-- Kilit ekranındaki yaprağın alt kısmında da aynı "ARKA YAPRAK" şeridi görünür. İçerik yılın
-  gün numarasına göre her gün değişir.
+- 📆 **Üç takvim bir arada:** Miladi, Hicri ve Rumi tarih.
+- 🌍 **İki şehir:** her biri için canlı analog saat, hava durumu ve namaz vakitleri. Şehri ad yazarak seçersin, istersen birincisi telefonun konumundan bulunur.
+- 🔄 **Arka yaprak:** takvime **çift dokun**, yaprak çevrilir. Günün menüsü, bugün doğanlara isim önerileri, bilmece ya da fıkra. İçerik her gün değişir.
+- 🔒 **Kilit ekranı:** yaprak kilit ekranında durur, akrep, yelkovan ve kırmızı saniye kolu çalışır.
+- 🗓️ **Ajanda (isteğe bağlı):** telefon takvimindeki sıradaki etkinlik görünür. Kilit ekranında gösterilmez.
+- 📱 **Her ekrana uyum:** uzun ve kısa ekranlarda yerleşim kendini ayarlar.
 
-**Kilit ekranı** (isteğe bağlı, Ayarlar'dan)
+## ❓ Sık sorulanlar
 
-- **Canlı kilit ekranı:** takvim yaprağı canlı duvar kağıdı olarak kilit ekranında görünür.
-  Analog saatlerin akrep, yelkovan ve kırmızı saniye kolu gerçekten çalışır. Ekran kapalıyken
-  hiçbir şey çizilmez. Ajanda gizlilik için kilit ekranına eklenmez.
-- **Ana ekran resmi:** Bazı telefonlarda (örneğin Poco) canlı duvar kağıdı kilit ve ana ekrana
-  birlikte uygulanır. Ayarlar'dan bir resim seçilirse telefon kilitliyken takvim, kilit
-  açıkken bu resim görünür. Telefonun kendi duvar kağıdı ayarlarına dokunulmaz.
-- **Statik seçenek:** Yaprak, her gece yenilenen sabit bir resim olarak da ayarlanabilir
-  (analog saat bu modda donuk kalır). Canlı mod açıkken statik yenileme devre dışıdır.
-- Bazı telefon markaları kilit ekranı duvar kağıdını kendi tema sistemleriyle yönettiği için
-  bu özellikler her cihazda aynı çalışmayabilir.
-- Kilit ekranında dokunma alınamadığı için yaprağın arkası yalnızca uygulamada görülür.
+**Güvenli mi?**
+Kaynak kodu bu sayfada açık, istediğin gibi inceleyebilirsin. Uygulama hesap, reklam ya da takip aracı içermez. Aşağıdaki "Gizlilik" bölümüne bak.
 
-**Ana ekran widget'ı**
-- Basit bir sürüm var. Yeni tasarıma uyarlanması yol haritasında.
+**Güncelleme nasıl olur?**
+Şimdilik her sürümün imzası farklı. Yeni sürümü kurmadan önce eskisini sil. Ayarların sıfırlanır.
 
-## Ayarlar
-Takvim ekranında **uzun basınca** ayarlar açılır (tek dokunuş bir şey yapmaz, ekran görüntüsü
-alırken yaprak yanlışlıkla dönmesin diye): şehirler, otomatik konum, ajanda,
-ekranın açık kalması ve kilit ekranı seçenekleri.
+**Kilit ekranında saat takılıyor ya da durmuş.**
+Poco/Xiaomi'de: Ayarlar → Uygulamalar → Maarif Takvimi → **Pil tasarrufu: Kısıtlama yok** ve **Otomatik başlat** açık olsun.
 
-## Yol haritası
+**Kilit ekranında yaprağı çeviremiyorum.**
+Kilit ekranında dokunma alınamıyor. Arka yaprağı uygulamayı açıp çift dokunarak görürsün. Ama alt kısımda arka yaprağın özeti kilit ekranında da görünür.
 
-- Widget'ı yeni tasarıma ve farklı boyutlara uyarlama, otomatik yenileme
+**Namaz vakitleri resmî imsakiyeyle tutmuyor.**
+Vakitler hesaplanıyor (Diyanet yöntemi, deneysel), resmî imsakiyeden birkaç dakika sapabilir. Hicri tarih de Diyanet takviminden bir gün farklı olabilir. İbadet vakitleri için resmî kaynağa bakmanı öneririm.
+
+**Ana ekran widget'ı var mı?**
+Basit bir sürümü var, yeni tasarıma uyarlanacak.
+
+## 🔐 Gizlilik
+
+- 🕌 **Namaz vakitleri:** [Aladhan](https://aladhan.com/prayer-times-api) servisinden aylık indirilir, cihazda saklanır. İnternet yokken son indirilen ay kullanılır.
+- ⛅ **Hava durumu ve şehir arama:** [Open-Meteo](https://open-meteo.com/). Şehrin koordinatları bu servislere gönderilir. Otomatik konum açıksa telefonun son bilinen konumu kullanılır.
+- 🗓️ **Ajanda:** telefonun takviminden yalnızca cihazda okunur, dışarı gönderilmez.
+- Konum ve takvim izinleri **isteğe bağlıdır**. Vermezsen ilgili özellik çalışmaz, uygulama çalışır.
+- Hesap, reklam ve analiz aracı yoktur.
+
+## 🛠️ Geliştirenler için
+
+- Android Studio ile açıp derle (JDK 17, Android SDK 34, minimum Android 8.0).
+- GitHub Actions her `push`'ta derler, testleri çalıştırır ve APK'yı **Releases** altına koyar.
+- Kod yapısı için [ARCHITECTURE.md](ARCHITECTURE.md).
+- Günlük içerik (menü, isim, bilmece, fıkra) bu depodaki kendi yazılmış metinlerdir. `assets/data.json`'a eklenen metinlerin telif durumunu kontrol et, başkasının telifli metnini ekleme.
+
+## 🗺️ Sırada ne var
+
+- Widget'ı yeni tasarıma uyarlamak
 - Kilit ekranında ön ve arka yüzün sırayla gösterilmesi
-- Kilit ekranında sayfanın üst boşluğunun ayarlanabilir olması (şimdilik ekran yüksekliğinin %20'si)
-- Farklı markalarda (Samsung, Pixel vb.) deneme ve uyumluluk notları
-- Sabit imzalı sürüm (şimdi her derleme farklı debug imzası taşır), gizlilik politikası ve yayın
-- Daha fazla günlük içerik (halk takvimi, vecize, tarihte bugün)
+- Samsung, Pixel gibi farklı markalarda deneme
+- Sabit imzalı sürüm (güncellemelerde eskisini silmek gerekmesin)
+- Daha fazla günlük içerik
 
-## Veri kaynakları ve gizlilik
-- **Namaz vakitleri:** [Aladhan API](https://aladhan.com/prayer-times-api), hesaplama yöntemi 13
-  (Diyanet, deneysel). Vakitler hesaplanmıştır, resmî imsakiyeden birkaç dakika sapabilir.
-  Aylık indirilip cihazda saklanır, internet yokken son indirilen ay kullanılır.
-- **Hava durumu ve şehir arama:** [Open-Meteo](https://open-meteo.com/). Şehir koordinatları
-  bu servislere gönderilir. Otomatik konum açıksa telefonun son bilinen konumu kullanılır.
-- **Ajanda:** Telefonun takviminden yerelde okunur, cihazdan dışarı gönderilmez.
-- Uygulama kullanıcı hesabı, reklam veya analiz aracı içermez.
+## 📜 Lisans
 
-## Günlük içerik
-Menüler, isimler, bilmeceler ve fıkralar bu depoda kendi yazılmış metinlerdir. `data.json`
-dosyasına eklenen alıntı, tarihte bugün ve benzeri metinlerin kaynağını ve telif durumunu
-kontrol edin; başkasının telifli metnini eklemeyin.
+Kaynak kod herkese açıktır ama **açık kaynak değildir**: [PolyForm Noncommercial 1.0.0](LICENSE).
 
-## Derleme
+- ✅ Kişisel kullanım, inceleme, değiştirme ve kâr amacı gütmeden paylaşma serbest (lisans metni ve bildirim satırı korunarak).
+- ❌ Satmak, reklamlı ya da ücretli bir üründe kullanmak, başka bir adla pazarlamak gibi **ticari kullanım için izin gerekir**.
 
-- GitHub Actions `main`'e her `push`'ta derleyip testleri çalıştırır ve APK'yı **Releases**
-  altındaki "son sürüm"e koyar. Sabit indirme bağlantısı:
-  `https://github.com/geceleriesen/maariftakvim/releases/latest/download/MaarifTakvimi.apk`
-- APK şimdilik debug imzalıdır. Her derlemenin imzası farklı olduğu için yeni sürümü kurmadan
-  önce eskisini silmek gerekir; ayarlar sıfırlanır.
-- Yerelde: Android Studio ile açıp derleyin (JDK 17, Android SDK 34).
-
-## Yazı tipi
-Büyük gün numarası [Anton](https://github.com/googlefonts/AntonFont) yazı tipiyle çizilir,
-SIL Open Font License 1.1 ile lisanslıdır (`app/src/main/assets/fonts/OFL.txt`).
-
-## Lisans
-
-Kaynak kodu herkese açıktır ama **açık kaynak değildir**: [PolyForm Noncommercial 1.0.0](LICENSE)
-ile lisanslıdır.
-
-- **Serbest:** kişisel kullanım, öğrenme, inceleme, değiştirme, kâr amacı gütmeyen amaçlarla
-  paylaşma. Paylaşırken lisans metni ve `Required Notice` satırı korunmalıdır.
-- **İzin gerekir:** satmak, ücretli ya da reklamlı bir üründe veya hizmette kullanmak, kodu ya da
-  tasarımı ticari bir uygulamaya katmak, başka bir adla pazarlamak gibi her türlü ticari kullanım.
-  İzin için GitHub üzerinden iletişime geçin.
-
-Üçüncü taraf bileşenler kendi lisanslarında kalır: Anton yazı tipi (SIL OFL 1.1, yukarıda),
-AndroidX ve Glance kütüphaneleri (Apache 2.0).
-
-Bu bir hukuki tavsiye değildir; lisans metni bağlayıcı olan tek kaynaktır.
+Anton yazı tipi (SIL OFL 1.1) ile AndroidX ve Glance kütüphaneleri (Apache 2.0) kendi lisanslarında kalır. Bu bir hukuki tavsiye değildir, bağlayıcı olan lisans metnidir.
