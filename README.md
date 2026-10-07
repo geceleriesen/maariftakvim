@@ -46,7 +46,11 @@ Uygulamayı yapay zekâ (Claude) yardımıyla adım adım geliştirdim. Bu yüzd
 2. Uygulamayı aç ve **"Kilit ekranına koy"**a bas.
 3. Açılan ekranda **"Uygula"**ya bas ve **kilit ekranını** seç. Bitti! 🎉
 
+📖 **Adım adım, resimsiz ama sade bir rehber istersen: [Kullanma Kılavuzu](KILAVUZ.md).**
+
 ## 👆 Nasıl kullanılır?
+
+_Ayrıntılar için: [📖 Kullanma Kılavuzu](KILAVUZ.md)_
 
 | Ne yaparsan | Ne olur |
 |---|---|
