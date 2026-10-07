@@ -1,5 +1,9 @@
 # Büyük Saatli Maarif Takvimi
 
+[![Derleme](https://github.com/geceleriesen/maariftakvim/actions/workflows/build.yml/badge.svg)](https://github.com/geceleriesen/maariftakvim/actions/workflows/build.yml)
+[![Lisans: PolyForm Noncommercial](https://img.shields.io/badge/lisans-PolyForm%20Noncommercial%201.0.0-blue)](LICENSE)
+![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3DDC84)
+
 Eskiden evlerde duvarda asılı duran büyük saatli maarif takviminin Android uygulaması.
 Saman kâğıdı tonlarında bir yaprak: Miladi, Hicri ve Rumi tarih, iki şehrin saati, havası ve
 namaz vakitleri, halk takvimi notları ve yaprağın arkasında günün menüsü, isimleri, bilmecesi.
@@ -26,6 +30,9 @@ ve **Otomatik başlat** açık olsun.
 ## Neler var
 
 **Takvim sayfası (tam ekran)**
+- Ekrana uyumlu yerleşim: kare ekranlarda sabit oranı korur, 20:9 gibi uzun ekranlarda
+  artan yüksekliği başlığa, saatlere ve namaz vakti kutularına dağıtır. Arka yaprak şeridi
+  sabit boyutta, alta yaslı kalır.
 - Miladi, Hicri ve Rumi tarih. Hicri tarih Umm al-Qura takviminden hesaplanır ve Diyanet
   takviminden bir gün sapabilir.
 - İki şehir: ad yazarak aranır. İstenirse 1. şehir telefonun konumundan otomatik belirlenir.
@@ -35,9 +42,11 @@ ve **Otomatik başlat** açık olsun.
 - Halk takvimi notu, vecize ve "tarihte bugün" satırı (`assets/data.json`).
 - İsteğe bağlı ajanda satırı: telefon takvimindeki bugünün sıradaki etkinliği.
 
-**Arka yaprak** (ekrana dokununca yaprak çevrilir)
-- Günün menüsü, bugün doğanlara isim önerileri, günün bilmecesi (cevabıyla) ya da fıkrası,
-  tarihte bugün.
+**Arka yaprak** (ekrana **çift dokununca** yaprak çevrilir)
+- Günün menüsü, bugün doğanlara isim önerileri (Erkek / Kız ayrı satırlarda), günün bilmecesi
+  (cevabıyla) ya da fıkrası, tarihte bugün.
+- Kilit ekranındaki yaprağın alt kısmında da aynı "ARKA YAPRAK" şeridi görünür. İçerik yılın
+  gün numarasına göre her gün değişir.
 
 **Kilit ekranı** (isteğe bağlı, Ayarlar'dan)
 
@@ -57,14 +66,15 @@ ve **Otomatik başlat** açık olsun.
 - Basit bir sürüm var. Yeni tasarıma uyarlanması yol haritasında.
 
 ## Ayarlar
-Takvim ekranında **uzun basınca** ayarlar açılır: şehirler, otomatik konum, ajanda,
+Takvim ekranında **uzun basınca** ayarlar açılır (tek dokunuş bir şey yapmaz, ekran görüntüsü
+alırken yaprak yanlışlıkla dönmesin diye): şehirler, otomatik konum, ajanda,
 ekranın açık kalması ve kilit ekranı seçenekleri.
 
 ## Yol haritası
 
 - Widget'ı yeni tasarıma ve farklı boyutlara uyarlama, otomatik yenileme
 - Kilit ekranında ön ve arka yüzün sırayla gösterilmesi
-- Kilit ekranında sayfanın üst boşluğunun ayarlanabilir olması (şimdilik ekran yüksekliğinin %32'si)
+- Kilit ekranında sayfanın üst boşluğunun ayarlanabilir olması (şimdilik ekran yüksekliğinin %20'si)
 - Farklı markalarda (Samsung, Pixel vb.) deneme ve uyumluluk notları
 - Sabit imzalı sürüm (şimdi her derleme farklı debug imzası taşır), gizlilik politikası ve yayın
 - Daha fazla günlük içerik (halk takvimi, vecize, tarihte bugün)
@@ -97,4 +107,17 @@ Büyük gün numarası [Anton](https://github.com/googlefonts/AntonFont) yazı t
 SIL Open Font License 1.1 ile lisanslıdır (`app/src/main/assets/fonts/OFL.txt`).
 
 ## Lisans
-Henüz seçilmedi. Bir lisans eklenene kadar varsayılan olarak tüm hakları saklıdır.
+
+Kaynak kodu herkese açıktır ama **açık kaynak değildir**: [PolyForm Noncommercial 1.0.0](LICENSE)
+ile lisanslıdır.
+
+- **Serbest:** kişisel kullanım, öğrenme, inceleme, değiştirme, kâr amacı gütmeyen amaçlarla
+  paylaşma. Paylaşırken lisans metni ve `Required Notice` satırı korunmalıdır.
+- **İzin gerekir:** satmak, ücretli ya da reklamlı bir üründe veya hizmette kullanmak, kodu ya da
+  tasarımı ticari bir uygulamaya katmak, başka bir adla pazarlamak gibi her türlü ticari kullanım.
+  İzin için GitHub üzerinden iletişime geçin.
+
+Üçüncü taraf bileşenler kendi lisanslarında kalır: Anton yazı tipi (SIL OFL 1.1, yukarıda),
+AndroidX ve Glance kütüphaneleri (Apache 2.0).
+
+Bu bir hukuki tavsiye değildir; lisans metni bağlayıcı olan tek kaynaktır.
